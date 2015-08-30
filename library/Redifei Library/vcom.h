@@ -8,7 +8,7 @@
  * TODO:
  * Support USB TX interrupt
  * FIXME:
- * Can't read null
+ * Done : Can't read null
  *
  *
  * -Functions
@@ -40,6 +40,7 @@ typedef struct {
   void (*putChar) (char);
   char (*getChar) ();
   void (*printf) (char*, ...);
+  bool (*available) ();
 }vComPort_t;
 
 void vComPush(uint8_t c); // This Function only use in hw_config.c

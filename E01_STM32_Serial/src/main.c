@@ -30,9 +30,8 @@ int main(void) {
 
   while(1) {
     static uint8_t i;
-    uint8_t c = serialPort->getChar();
-    if(c != '\0') {
-      serialPort->printf("%d : %c\r\n", i++, c);
+    if(serialPort->available()) {
+      serialPort->printf("%d : %c\r\n", i++, serialPort->getChar());
     }
     _delay(10);
   }

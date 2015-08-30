@@ -45,6 +45,8 @@ The code is released under the 'GNU GENERAL PUBLIC LICENSE'
 > ->getChar
 > 
 > ->printf
+>
+> ->available
 
 contact Redifei (begoreGTS@gmail.com, ysun34@naver.com)
 

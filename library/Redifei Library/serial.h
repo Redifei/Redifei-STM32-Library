@@ -8,7 +8,7 @@
  * TODO:
  * Support softWare mode
  * FIXME:
- * Can't read null
+ * Done : Can't read null
  *
  *
  * -Functions
@@ -16,6 +16,7 @@
  * ->putChar
  * ->getChar
  * ->printf
+ * ->available
  */
 
 #pragma once
@@ -57,6 +58,7 @@ typedef struct {
   void (*putChar) (char);
   char (*getChar) ();
   void (*printf) (char*, ...);
+  bool (*available) ();
 
   serialMode_t serialMode;
 }serialUartPort_t;

@@ -23,9 +23,12 @@ void _delay(uint32_t ms) {
 }
 
 int main(void) {
+  // TimerPWM Library Example
+  // Open Serial Port
   serialPort = openSerial3(SERIAL_INTERRPUT_MODE);
   serialPort->printf("Hello World!\r\n");
 
+  // Open TimerPWM
   pwmInPort = openTimerPwm101(TIM_PWM_INPUT_MODE);
   pwmOutPort = openTimerPwm301(TIM_PWM_OUTPUT_MODE);
   pwmOutPort = openTimerPwm302(TIM_PWM_OUTPUT_MODE);

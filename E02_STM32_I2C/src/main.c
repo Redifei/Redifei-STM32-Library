@@ -23,6 +23,7 @@ void _delay(uint32_t ms) {
 }
 
 int main(void) {
+  // I2C Library Example
   // Open Serial Port
   serialPort = openSerial3(SERIAL_INTERRPUT_MODE);
   serialPort->printf("Hello World!\r\n");

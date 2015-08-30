@@ -24,15 +24,14 @@ void _delay(uint32_t ms) {
 
 
 int main(void) {
-  // Open Vcom Port
+  // Open VCom Port
   vcomPort = openVCom();
   vcomPort->printf("Hello World!\r\n");
 
   while (1) {
     static uint8_t i;
-    uint8_t c = vcomPort->getChar();
-    if(c != '\0') {
-      vcomPort->printf("%d : %c\r\n", i++, c);
+    if(vcomPort->available()) {
+      vcomPort->printf("%d : %c\r\n", i++, vcomPort->getChar());
     }
     _delay(10);
   }

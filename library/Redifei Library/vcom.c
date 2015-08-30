@@ -8,7 +8,7 @@
  * TODO:
  * Support USB TX interrupt
  * FIXME:
- * Can't read null
+ * Done : Can't read null
  *
  *
  * -Functions
@@ -16,6 +16,7 @@
  * ->putChar
  * ->getChar
  * ->printf
+ * ->available
  *
  * - Please set this value
  * platform_config.h : should configure USB_DISCONNECT_PIN
@@ -43,6 +44,7 @@ static vComPort_t vComPort;
 
 static uint8_t vComPortRxBuf[BUF_SIZE];
 
+static bool vCom_available();
 static char vCom_getChar();
 static void vCom_putChar(char c);
 static void vCom_Printf(char *format, ...);
@@ -61,10 +63,12 @@ vComPort_t* openVCom() {
   vComPort.getChar = vCom_getChar;
   vComPort.putChar = vCom_putChar;
   vComPort.printf = vCom_Printf;
+  vComPort.available = vCom_available;
 
   vComOpen();
   return &vComPort;
 }
+
 
 // Those use when receive data for usb
 void vComPush(uint8_t c) {
@@ -80,28 +84,23 @@ char vComPop() {
   return c;
 }
 
-// Read/Write
-static char vCom_getChar() {
-  return vComPop();
-}
 
+static bool vCom_available() {return vComPort.queue.head != vComPort.queue.tail;}
 static void vCom_putChar(char c) {
 // XXX: why used if?
 //  if (bDeviceState == CONFIGURED) {
     USB_Send_Data(c);
 //  }
 }
-
-static void vCom_putc(void *p, char c) {
-  vCom_putChar(c);
-}
-
+static char vCom_getChar() {return vComPop();}
+static void vCom_putc(void *p, char c) {vCom_putChar(c);}
 static void vCom_Printf(char *format, ...) {
   va_list va;
   va_start(va, format);
   tfp_format(NULL, vCom_putc, format, va);
   va_end(va);
 }
+
 
 // Redifei: ADD IRQ Handlers
 // XXX: why don't use tx interrupt
