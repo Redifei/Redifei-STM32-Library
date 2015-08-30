@@ -11,6 +11,7 @@
  * Independent queue type
  * FIXME:
  * Error busy flag in i2cReadBytes Function
+ * Support i2cUnstick
  *
  *
  * -Functions
