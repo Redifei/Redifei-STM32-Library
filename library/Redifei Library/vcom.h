@@ -5,9 +5,9 @@
  * The code is released under the 'GNU GENERAL PUBLIC LICENSE Version 2'
  *
  *
- * TODO:
+ * TODO(VCOM):
  * Support USB TX interrupt
- * FIXME:
+ * FIXME(VCOM):
  * Done : Can't read null
  *
  *
@@ -37,11 +37,11 @@ typedef struct {
   Qtype_t queue;
 
   /* 가상 컴포트에서 사용할 함수 */
-  void (*putChar) (char);
-  char (*getChar) ();
-  void (*printf) (char*, ...);
-  bool (*available) ();
-}vComPort_t;
+  void (*putChar)(char);
+  char (*getChar)();
+  void (*printf)(char*, ...);
+  bool (*available)();
+} vComPort_t;
 
 void vComPush(uint8_t c); // This Function only use in hw_config.c
 vComPort_t* openVCom();

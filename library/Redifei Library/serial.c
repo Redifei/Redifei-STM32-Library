@@ -5,9 +5,9 @@
  * The code is released under the 'GNU GENERAL PUBLIC LICENSE Version 2'
  *
  *
- * TODO:
+ * TODO(Serial):
  * Support softWare mode
- * FIXME:
+ * FIXME(Serial):
  * Done : Can't read null
  *
  *
@@ -59,14 +59,15 @@ static void serial3_Printf(char *format, ...);
  * @param c : 송신할 데이터
  */
 static void putchar_(serialUartPort_t* instance, char c) {
-  if(instance->serialMode == SERIAL_INTERRPUT_MODE) {
+  if (instance->serialMode == SERIAL_INTERRPUT_MODE) {
     instance->txQueue.buf[instance->txQueue.head++] = c;
     instance->txQueue.head %= instance->txQueue.size;
     USART_ITConfig(instance->uartPort, USART_IT_TXE, ENABLE);
   }
-  else if(instance->serialMode == SERIAL_POLLING_MODE) {
+  else if (instance->serialMode == SERIAL_POLLING_MODE) {
     USART_SendData(instance->uartPort, c);
-    while(USART_GetFlagStatus(instance->uartPort, USART_FLAG_TXE) == RESET);
+    while (USART_GetFlagStatus(instance->uartPort, USART_FLAG_TXE) == RESET)
+      ;
   }
 }
 
@@ -77,9 +78,9 @@ static void putchar_(serialUartPort_t* instance, char c) {
  */
 static char getchar_(serialUartPort_t* instance) {
   char c = '\0';
-  if(instance->serialMode == SERIAL_INTERRPUT_MODE) {
-    while(1) {
-      if(instance->rxQueue.head != instance->rxQueue.tail) {
+  if (instance->serialMode == SERIAL_INTERRPUT_MODE) {
+    while (1) {
+      if (instance->rxQueue.head != instance->rxQueue.tail) {
         c = instance->rxQueue.buf[instance->rxQueue.tail++];
         instance->rxQueue.tail %= instance->rxQueue.size;
       }
@@ -87,10 +88,11 @@ static char getchar_(serialUartPort_t* instance) {
       break;
     }
   }
-  else if(instance->serialMode == SERIAL_POLLING_MODE) {
+  else if (instance->serialMode == SERIAL_POLLING_MODE) {
     char c = '\0';
-    while(USART_GetFlagStatus(instance->uartPort, USART_FLAG_RXNE) == RESET);
-    c = (char)USART_ReceiveData(instance->uartPort);
+    while (USART_GetFlagStatus(instance->uartPort, USART_FLAG_RXNE) == RESET)
+      ;
+    c = (char) USART_ReceiveData(instance->uartPort);
   }
   return c;
 }
@@ -100,12 +102,11 @@ static char getchar_(serialUartPort_t* instance) {
  * @param instance : 사용할 시리얼/유아트 포트
  */
 static void serialUartOpen(serialUartPort_t* instance) {
-  if(instance->serialMode == SERIAL_INTERRPUT_MODE ||
-      instance->serialMode == SERIAL_POLLING_MODE) {
+  if (instance->serialMode == SERIAL_INTERRPUT_MODE || instance->serialMode == SERIAL_POLLING_MODE) {
     RCC_APB2PeriphClockCmd(instance->rx_gpioClock, ENABLE);
     RCC_APB2PeriphClockCmd(instance->tx_gpioClock, ENABLE);
 
-    if(instance->uartClock != RCC_APB2Periph_USART1)
+    if (instance->uartClock != RCC_APB2Periph_USART1)
       RCC_APB1PeriphClockCmd(instance->uartClock, ENABLE); // 2345
     else
       RCC_APB2PeriphClockCmd(instance->uartClock, ENABLE); // 1
@@ -129,21 +130,21 @@ static void serialUartOpen(serialUartPort_t* instance) {
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
     USART_Init(instance->uartPort, &USART_InitStructure);
 
-    if(instance->serialMode == SERIAL_INTERRPUT_MODE) {
-        USART_ITConfig(instance->uartPort, USART_IT_RXNE, ENABLE);
+    if (instance->serialMode == SERIAL_INTERRPUT_MODE) {
+      USART_ITConfig(instance->uartPort, USART_IT_RXNE, ENABLE);
 
-        NVIC_InitTypeDef NVIC_InitStructure;
-        NVIC_InitStructure.NVIC_IRQChannel = instance->uartIRQ;
-        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-        NVIC_Init(&NVIC_InitStructure);
+      NVIC_InitTypeDef NVIC_InitStructure;
+      NVIC_InitStructure.NVIC_IRQChannel = instance->uartIRQ;
+      NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+      NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+      NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+      NVIC_Init(&NVIC_InitStructure);
     }
 
     USART_Cmd(instance->uartPort, ENABLE);
   }
   else {
-     // SOFT SERIAL
+    // SOFT SERIAL
   }
 }
 
@@ -256,23 +257,31 @@ serialUartPort_t* openSerial2(serialMode_t mode) {
  * 시리얼1 포트에 수신 버퍼에 데이터가 있는지 확인
  * @return 데이터의 유무
  */
-static bool serial1_available() {return serialUartPort1.rxQueue.head != serialUartPort1.rxQueue.tail;}
+static bool serial1_available() {
+  return serialUartPort1.rxQueue.head != serialUartPort1.rxQueue.tail;
+}
 /**
  * 시리얼1 포트로 1바이트 데이터 송신
  * @param c 송신할 데이터
  */
-static void serial1_putChar(char c) {putchar_(&serialUartPort1, c);}
+static void serial1_putChar(char c) {
+  putchar_(&serialUartPort1, c);
+}
 /**
  * 시리얼1 포트로 1바이트 데이터 수신
  * @return 수신된 데이터
  */
-static char serial1_getChar() {return getchar_(&serialUartPort1);}
+static char serial1_getChar() {
+  return getchar_(&serialUartPort1);
+}
 /**
  * 시리얼1 포트로 1바이트 데이터 송신(Printf에서 사용될 함수)
  * @param p 사용안함
  * @param c 전송할 데이터
  */
-static void serial1_putc(void *p, char c) {putchar_(&serialUartPort1, c);}
+static void serial1_putc(void *p, char c) {
+  putchar_(&serialUartPort1, c);
+}
 /**
  * 시리얼1 포트로 문자열 송신
  * @param format 전송할 문자열과 포맷
@@ -284,10 +293,18 @@ static void serial1_Printf(char *format, ...) {
   va_end(va);
 }
 
-static bool serial2_available() {return serialUartPort2.rxQueue.head != serialUartPort2.rxQueue.tail;}
-static void serial2_putChar(char c) {putchar_(&serialUartPort2, c);}
-static char serial2_getChar() {return getchar_(&serialUartPort2);}
-static void serial2_putc(void *p, char c) {putchar_(&serialUartPort2, c);}
+static bool serial2_available() {
+  return serialUartPort2.rxQueue.head != serialUartPort2.rxQueue.tail;
+}
+static void serial2_putChar(char c) {
+  putchar_(&serialUartPort2, c);
+}
+static char serial2_getChar() {
+  return getchar_(&serialUartPort2);
+}
+static void serial2_putc(void *p, char c) {
+  putchar_(&serialUartPort2, c);
+}
 static void serial2_Printf(char *format, ...) {
   va_list va;
   va_start(va, format);
@@ -295,10 +312,18 @@ static void serial2_Printf(char *format, ...) {
   va_end(va);
 }
 
-static bool serial3_available() {return serialUartPort3.rxQueue.head != serialUartPort3.rxQueue.tail;}
-static void serial3_putChar(char c) {putchar_(&serialUartPort3, c);}
-static char serial3_getChar() {return getchar_(&serialUartPort3);}
-static void serial3_putc(void *p, char c) {putchar_(&serialUartPort3, c);}
+static bool serial3_available() {
+  return serialUartPort3.rxQueue.head != serialUartPort3.rxQueue.tail;
+}
+static void serial3_putChar(char c) {
+  putchar_(&serialUartPort3, c);
+}
+static char serial3_getChar() {
+  return getchar_(&serialUartPort3);
+}
+static void serial3_putc(void *p, char c) {
+  putchar_(&serialUartPort3, c);
+}
 static void serial3_Printf(char *format, ...) {
   va_list va;
   va_start(va, format);
@@ -306,22 +331,21 @@ static void serial3_Printf(char *format, ...) {
   va_end(va);
 }
 
-
 /**
  * 시리얼/유아트 포트 인터럽트 핸들러
  * @param instance 호출된 시리얼/유아트 포트
  */
 static void serialUart_handler(serialUartPort_t* instance) {
-  if(USART_GetITStatus(instance->uartPort, USART_IT_RXNE) != RESET) {
+  if (USART_GetITStatus(instance->uartPort, USART_IT_RXNE) != RESET) {
     USART_ClearITPendingBit(instance->uartPort, USART_IT_RXNE);
     instance->rxQueue.buf[instance->rxQueue.head++] = USART_ReceiveData(instance->uartPort);
     instance->rxQueue.head %= instance->rxQueue.size;
   }
-  if(USART_GetITStatus(instance->uartPort, USART_IT_TXE) != RESET) {
+  if (USART_GetITStatus(instance->uartPort, USART_IT_TXE) != RESET) {
     USART_ClearITPendingBit(instance->uartPort, USART_IT_TXE);
     USART_SendData(instance->uartPort, instance->txQueue.buf[instance->txQueue.tail++]);
     instance->txQueue.tail %= instance->txQueue.size;
-    if(instance->txQueue.head == instance->txQueue.tail)
+    if (instance->txQueue.head == instance->txQueue.tail)
       USART_ITConfig(instance->uartPort, USART_IT_TXE, DISABLE);
   }
 }

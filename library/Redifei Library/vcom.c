@@ -5,9 +5,9 @@
  * The code is released under the 'GNU GENERAL PUBLIC LICENSE Version 2'
  *
  *
- * TODO:
+ * TODO(VCOM):
  * Support USB TX interrupt
- * FIXME:
+ * FIXME(VCOM):
  * Done : Can't read null
  *
  *
@@ -69,7 +69,6 @@ vComPort_t* openVCom() {
   return &vComPort;
 }
 
-
 // Those use when receive data for usb
 void vComPush(uint8_t c) {
   vComPort.queue.buf[vComPort.queue.head++] = c;
@@ -84,23 +83,27 @@ char vComPop() {
   return c;
 }
 
-
-static bool vCom_available() {return vComPort.queue.head != vComPort.queue.tail;}
+static bool vCom_available() {
+  return vComPort.queue.head != vComPort.queue.tail;
+}
 static void vCom_putChar(char c) {
 // XXX: why used if?
 //  if (bDeviceState == CONFIGURED) {
-    USB_Send_Data(c);
+  USB_Send_Data(c);
 //  }
 }
-static char vCom_getChar() {return vComPop();}
-static void vCom_putc(void *p, char c) {vCom_putChar(c);}
+static char vCom_getChar() {
+  return vComPop();
+}
+static void vCom_putc(void *p, char c) {
+  vCom_putChar(c);
+}
 static void vCom_Printf(char *format, ...) {
   va_list va;
   va_start(va, format);
   tfp_format(NULL, vCom_putc, format, va);
   va_end(va);
 }
-
 
 // Redifei: ADD IRQ Handlers
 // XXX: why don't use tx interrupt
