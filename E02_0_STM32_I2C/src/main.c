@@ -1,5 +1,5 @@
 /*
- * Redifei: E02 I2C Library Example
+ * Redifei: E02_0 I2C Library Example
  * The code is released under the 'GNU GENERAL PUBLIC LICENSE Version 2'
  */
 #include <stm32f10x_conf.h>
@@ -27,7 +27,7 @@ int main(void) {
   serialPort->printf("Hello World!\r\n");
 
   // Open I2C Port
-  i2cPort = openI2C1(I2C_POLLING_MODE);
+  i2cPort = openI2C1(I2C_INTERRPUT_MODE);
   serialPort->printf("Open I2C Port\r\n");
 
   i2cPort->write1Byte(0x68, 0x6B, 0x80);
