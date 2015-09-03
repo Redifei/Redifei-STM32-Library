@@ -2,28 +2,26 @@
  * Redifei: E03 TimerPWM Library Example
  * The code is released under the 'GNU GENERAL PUBLIC LICENSE Version 2'
  */
-#include "stm32f10x_conf.h"
-#include "printf.h"
+#include <stm32f10x_conf.h>
 
+#include "systickTimer.h"
 #include "i2c.h"
 #include "pwm.h"
+#include "printf.h"
 #include "serial.h"
 #include "vcom.h"
 
-serialUartPort_t*   serialPort;
-vComPort_t*         vcomPort;
-i2cPort_t*          i2cPort;
-timPwmPort_t*       pwmInPort;
-timPwmPort_t*       pwmOutPort;
-
-
-void _delay(uint32_t ms) {
-  ms *= 8000;
-  while(--ms);
-}
+serialUartPort_t* serialPort;
+vComPort_t* vcomPort;
+i2cPort_t* i2cPort;
+timPwmPort_t* pwmInPort;
+timPwmPort_t* pwmOutPort;
 
 int main(void) {
   // TimerPWM Library Example
+  // Config systemTick Timer
+  systickTimerConfig();
+
   // Open Serial Port
   serialPort = openSerial3(SERIAL_INTERRPUT_MODE);
   serialPort->printf("Hello World!\r\n");
@@ -36,8 +34,8 @@ int main(void) {
   pwmOutPort->chan1Write(500);
   pwmOutPort->chan2Write(1500);
 
-  while(1) {
-    serialPort->printf("%d\r\n",pwmInPort->chan1Read());
-    _delay(100);
+  while (1) {
+    serialPort->printf("%d\r\n", pwmInPort->chan1Read());
+    delay(100);
   }
 }

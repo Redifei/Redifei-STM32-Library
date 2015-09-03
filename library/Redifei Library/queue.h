@@ -1,3 +1,9 @@
+/*
+ * Redifei: queue Library
+ *
+ * The code is released under the 'GNU GENERAL PUBLIC LICENSE Version 2'
+ */
+
 #pragma once
 
 typedef struct {

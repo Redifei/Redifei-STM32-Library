@@ -17,7 +17,7 @@
  * ->chanxRead : x(1;4)
  */
 
-#include "stm32f10x_conf.h"
+#include <stm32f10x_conf.h>
 #include "pwm.h"
 
 timPwmPort_t timPwm1;

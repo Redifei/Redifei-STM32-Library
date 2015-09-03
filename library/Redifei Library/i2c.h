@@ -11,7 +11,7 @@
  * Done : Independent queue type
  * FIXME(I2C):
  * Error busy flag in i2cReadBytes Function
- * Support i2cUnstick
+ * (Checking) Support i2cUnstick
  *
  *
  * -Functions
@@ -25,12 +25,6 @@
 #pragma once
 
 #include "queue.h"
-
-typedef uint8_t bool;
-#define false (bool)0
-#define true  (bool)1
-
-#define I2C_DEFAULT_TIMEOUT 30000
 
 #define I2C_CR1_START ((uint16_t)0x0100)
 #define I2C_CR1_STOP ((uint16_t)0x0200)

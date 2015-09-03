@@ -11,7 +11,7 @@
  * Done : Independent queue type
  * FIXME(I2C):
  * Error busy flag in i2cReadBytes Function
- * Support i2cUnstick
+ * (Checking) Support i2cUnstick
  *
  *
  * -Functions
@@ -22,8 +22,12 @@
  * ->read1Byte
  */
 
-#include "stm32f10x_conf.h"
+#include <stdbool.h>
+#include <stm32f10x_conf.h>
+#include "systickTimer.h"
 #include "i2c.h"
+
+#define I2C_DEFAULT_TIMEOUT 30000
 
 #define BUF_SIZE 32
 
@@ -208,43 +212,43 @@ static uint8_t i2cReadBytes(i2cPort_t* instance, uint8_t addr, uint8_t reg, uint
   return instance->error;
 }
 
+// FIXME: Untested
 static void i2cUnstick(i2cPort_t* instance) {
-  // UnSuported DelayMicroseconds
-  /*
-   GPIO_InitTypeDef GPIO_InitStructure;
-   GPIO_InitStructure.GPIO_Pin = instance->scl_gpioPin;
-   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
-   gpioInit(instance->scl_gpioPort, &GPIO_InitStructure);
+#if 0
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Pin = instance->scl_gpioPin;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
+  GPIO_Init(instance->scl_gpioPort, &GPIO_InitStructure);
 
-   GPIO_InitStructure.GPIO_Pin = instance->sda_gpioPin;
-   gpioInit(instance->sda_gpioPort, &GPIO_InitStructure);
+  GPIO_InitStructure.GPIO_Pin = instance->sda_gpioPin;
+  GPIO_Init(instance->sda_gpioPort, &GPIO_InitStructure);
 
-   GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_SET);
-   GPIO_WriteBit(instance->sda_gpioPort, instance->sda_gpioPin, Bit_SET);
+  GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_SET);
+  GPIO_WriteBit(instance->sda_gpioPort, instance->sda_gpioPin, Bit_SET);
 
-   uint8_t i;
-   for (i = 0; i < 8; i++) {
-   // Wait for any clock stretching to finish
-   while (!digitalIn(instance->scl_gpioPort, instance->scl_gpioPin))
-   delayMicroseconds(10);
+  uint8_t i;
+  for (i = 0; i < 8; i++) {
+    // Wait for any clock stretching to finish
+    while (!GPIO_ReadInputDataBit(instance->scl_gpioPort, instance->scl_gpioPin))
+    delayMicroseconds(10);
 
-   // Pull low
-   GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_RESET); // Set bus low
-   delayMicroseconds(10);
-   // Release high again
-   GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_SET); // Set bus high
-   delayMicroseconds(10);
-   }
+    // Pull low
+    GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_RESET);// Set bus low
+    delayMicroseconds(10);
+    // Release high again
+    GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_SET);// Set bus high
+    delayMicroseconds(10);
+  }
 
-   GPIO_WriteBit(instance->sda_gpioPort, instance->sda_gpioPin, Bit_RESET); // Set bus data low
-   delayMicroseconds(10);
-   GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_RESET); // Set bus scl low
-   delayMicroseconds(10);
-   GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_SET); // Set bus scl high
-   delayMicroseconds(10);
-   GPIO_WriteBit(instance->sda_gpioPort, instance->sda_gpioPin, Bit_SET); // Set bus sda high
-   */
+  GPIO_WriteBit(instance->sda_gpioPort, instance->sda_gpioPin, Bit_RESET); // Set bus data low
+  delayMicroseconds(10);
+  GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_RESET);// Set bus scl low
+  delayMicroseconds(10);
+  GPIO_WriteBit(instance->scl_gpioPort, instance->scl_gpioPin, Bit_SET);// Set bus scl high
+  delayMicroseconds(10);
+  GPIO_WriteBit(instance->sda_gpioPort, instance->sda_gpioPin, Bit_SET);// Set bus sda high
+#endif
 }
 
 static void i2cOpen(i2cPort_t* instance) {
@@ -456,7 +460,7 @@ static void i2c_ev_handler(i2cPort_t* instance) {
   uint8_t bytes = instance->i2cLength;
 
   uint8_t writing = false, reading = false;
-  (instance->i2cDirection == I2C_Direction_Transmitter) ? (writing = true ) : (reading = true );
+  (instance->i2cDirection == I2C_Direction_Transmitter) ? (writing = true) : (reading = true);
 
   uint8_t SReg_1 = I2Cx->SR1;
 

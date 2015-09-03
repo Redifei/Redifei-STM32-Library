@@ -30,11 +30,11 @@
  */
 
 #include <stdlib.h>
-#include "hw_config.h"
-#include "usb_lib.h"
-#include "usb_desc.h"
-#include "usb_pwr.h"
-#include "usb_istr.h"
+#include <hw_config.h>
+#include <usb_lib.h>
+#include <usb_desc.h>
+#include <usb_pwr.h>
+#include <usb_istr.h>
 #include "printf.h"
 #include "vcom.h"
 

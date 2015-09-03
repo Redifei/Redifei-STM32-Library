@@ -19,9 +19,9 @@
  * ->available
  */
 
-#include <stdlib.h> // support NULL
+#include <stdlib.h>
 #include <stdbool.h>
-#include "stm32f10x_conf.h"
+#include <stm32f10x_conf.h>
 #include "printf.h"
 #include "serial.h"
 
