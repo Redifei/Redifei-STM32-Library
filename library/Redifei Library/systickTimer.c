@@ -23,6 +23,14 @@
 static volatile uint32_t systickCount;
 static uint32_t usTicks;
 
+/****************************************
+ * External Functions
+ ****************************************/
+
+/**
+ * systickTimerConfig
+ * @note SysTick_Config : SYSCLK_Frequency / 1000
+ */
 void systickTimerConfig() {
   RCC_ClocksTypeDef RCC_CLOCKS;
   RCC_GetClocksFreq(&RCC_CLOCKS);
@@ -40,6 +48,7 @@ uint32_t micros() {
   return (ms*1000) + ((usTicks * 1000 - cycleCount) / usTicks);
 }
 
+// FIXME: micros countable is 50 Days
 uint32_t millis() {
   return systickCount;
 }
@@ -55,6 +64,9 @@ void delay(uint32_t ms) {
   }
 }
 
+/****************************************
+ * Interrupt Handler
+ ****************************************/
 void SysTick_Handler() {
   systickCount++;
 }

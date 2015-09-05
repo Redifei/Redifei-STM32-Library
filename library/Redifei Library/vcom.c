@@ -49,6 +49,11 @@ static char vCom_getChar();
 static void vCom_putChar(char c);
 static void vCom_Printf(char *format, ...);
 
+char vComPop();
+
+/****************************************
+ * Internal Functions
+ ****************************************/
 static void vComOpen() {
   Set_System();
   Set_USBClock();
@@ -56,6 +61,14 @@ static void vComOpen() {
   USB_Init();
 }
 
+/****************************************
+ * External Functions
+ ****************************************/
+/**
+ * openVCom
+ * @note D+ : PA12, D- : PA11, DISCONNECT_PIN : PC14
+ * @return vComPort_t*
+ */
 vComPort_t* openVCom() {
   vComPort.queue.buf = vComPortRxBuf;
   vComPort.queue.size = BUF_SIZE;
@@ -68,21 +81,6 @@ vComPort_t* openVCom() {
   vComOpen();
   return &vComPort;
 }
-
-// Those use when receive data for usb
-void vComPush(uint8_t c) {
-  vComPort.queue.buf[vComPort.queue.head++] = c;
-  vComPort.queue.head %= vComPort.queue.size;
-}
-char vComPop() {
-  char c = '\0';
-  if (vComPort.queue.head != vComPort.queue.tail) {
-    c = vComPort.queue.buf[vComPort.queue.tail++];
-    vComPort.queue.tail %= vComPort.queue.size;
-  }
-  return c;
-}
-
 static bool vCom_available() {
   return vComPort.queue.head != vComPort.queue.tail;
 }
@@ -105,7 +103,24 @@ static void vCom_Printf(char *format, ...) {
   va_end(va);
 }
 
-// Redifei: ADD IRQ Handlers
+// TODO: this exception functions to be deleted
+// Those use when receive data for usb
+void vComPush(char c) {
+  vComPort.queue.buf[vComPort.queue.head++] = c;
+  vComPort.queue.head %= vComPort.queue.size;
+}
+char vComPop() {
+  char c = '\0';
+  if (vComPort.queue.head != vComPort.queue.tail) {
+    c = vComPort.queue.buf[vComPort.queue.tail++];
+    vComPort.queue.tail %= vComPort.queue.size;
+  }
+  return c;
+}
+
+/****************************************
+ * Interrupt Handler
+ ****************************************/
 // XXX: why don't use tx interrupt
 void USB_LP_CAN1_RX0_IRQHandler() {
   USB_Istr();

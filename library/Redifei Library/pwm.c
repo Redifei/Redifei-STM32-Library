@@ -25,6 +25,49 @@ timPwmPort_t timPwm2;
 timPwmPort_t timPwm3;
 timPwmPort_t timPwm4;
 
+static void timerPwm1();
+static void timerPwm101_write(uint16_t duty);
+static void timerPwm102_write(uint16_t duty);
+static void timerPwm103_write(uint16_t duty);
+static void timerPwm104_write(uint16_t duty);
+static uint16_t timerPwm101_read();
+static uint16_t timerPwm102_read();
+static uint16_t timerPwm103_read();
+static uint16_t timerPwm104_read();
+
+static void timerPwm2();
+static void timerPwm201_write(uint16_t duty);
+static void timerPwm202_write(uint16_t duty);
+static void timerPwm203_write(uint16_t duty);
+static void timerPwm204_write(uint16_t duty);
+static uint16_t timerPwm201_read();
+static uint16_t timerPwm202_read();
+static uint16_t timerPwm203_read();
+static uint16_t timerPwm204_read();
+
+static void timerPwm3();
+static void timerPwm301_write(uint16_t duty);
+static void timerPwm302_write(uint16_t duty);
+static void timerPwm303_write(uint16_t duty);
+static void timerPwm304_write(uint16_t duty);
+static uint16_t timerPwm301_read();
+static uint16_t timerPwm302_read();
+static uint16_t timerPwm303_read();
+static uint16_t timerPwm304_read();
+
+static void timerPwm4();
+static void timerPwm401_write(uint16_t duty);
+static void timerPwm402_write(uint16_t duty);
+static void timerPwm403_write(uint16_t duty);
+static void timerPwm404_write(uint16_t duty);
+static uint16_t timerPwm401_read();
+static uint16_t timerPwm402_read();
+static uint16_t timerPwm403_read();
+static uint16_t timerPwm404_read();
+
+/****************************************
+ * Internal Functions
+ ****************************************/
 void timeBaseInit(timPwmPort_t* instance, timPwmMode_t mode) {
   RCC_ClocksTypeDef RCC_CLOCKS;
   RCC_GetClocksFreq(&RCC_CLOCKS);
@@ -227,24 +270,15 @@ void timerPwmOpen(timPwmPort_t* instance, uint16_t timChan, timPwmMode_t mode) {
   }
 }
 
-/*
- * TIMER1
+/****************************************
+ * External Functions
+ ****************************************/
+/**
+ * openTimerPwm101
+ * @note PA8, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
  */
-void timerPwm1() {
-  timPwm1.timClock = RCC_APB2Periph_TIM1;
-  timPwm1.timPort = TIM1;
-  timPwm1.timIRQ = TIM1_CC_IRQn;
-
-  timPwm1.resolution = 1000000;
-  timPwm1.hz = 250;
-}
-
-void timerPwm101_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm1, TIM_Channel_1, duty);
-}
-uint16_t timerPwm101_read() {
-  return timPwm1.duty[0];
-}
 timPwmPort_t* openTimerPwm101(timPwmMode_t mode) {
   timerPwm1();
 
@@ -259,13 +293,12 @@ timPwmPort_t* openTimerPwm101(timPwmMode_t mode) {
 
   return &timPwm1;
 }
-
-void timerPwm102_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm1, TIM_Channel_2, duty);
-}
-uint16_t timerPwm102_read() {
-  return timPwm1.duty[1];
-}
+/**
+ * openTimerPwm102
+ * @note PA9, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm102(timPwmMode_t mode) {
   timerPwm1();
 
@@ -280,13 +313,12 @@ timPwmPort_t* openTimerPwm102(timPwmMode_t mode) {
 
   return &timPwm1;
 }
-
-void timerPwm103_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm1, TIM_Channel_3, duty);
-}
-uint16_t timerPwm103_read() {
-  return timPwm1.duty[2];
-}
+/**
+ * openTimerPwm103
+ * @note PA10, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm103(timPwmMode_t mode) {
   timerPwm1();
 
@@ -301,13 +333,12 @@ timPwmPort_t* openTimerPwm103(timPwmMode_t mode) {
 
   return &timPwm1;
 }
-
-void timerPwm104_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm1, TIM_Channel_4, duty);
-}
-uint16_t timerPwm104_read() {
-  return timPwm1.duty[3];
-}
+/**
+ * openTimerPwm104
+ * @note PA11, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm104(timPwmMode_t mode) {
   timerPwm1();
 
@@ -323,24 +354,46 @@ timPwmPort_t* openTimerPwm104(timPwmMode_t mode) {
   return &timPwm1;
 }
 
-/*
- * TIMER2
+static void timerPwm1() {
+  timPwm1.timClock = RCC_APB2Periph_TIM1;
+  timPwm1.timPort = TIM1;
+  timPwm1.timIRQ = TIM1_CC_IRQn;
+
+  timPwm1.resolution = 1000000;
+  timPwm1.hz = 250;
+}
+
+static void timerPwm101_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm1, TIM_Channel_1, duty);
+}
+static uint16_t timerPwm101_read() {
+  return timPwm1.duty[0];
+}
+static void timerPwm102_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm1, TIM_Channel_2, duty);
+}
+static uint16_t timerPwm102_read() {
+  return timPwm1.duty[1];
+}
+static void timerPwm103_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm1, TIM_Channel_3, duty);
+}
+static uint16_t timerPwm103_read() {
+  return timPwm1.duty[2];
+}
+static void timerPwm104_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm1, TIM_Channel_4, duty);
+}
+static uint16_t timerPwm104_read() {
+  return timPwm1.duty[3];
+}
+
+/**
+ * openTimerPwm201
+ * @note PA0, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
  */
-void timerPwm2() {
-  timPwm2.timClock = RCC_APB1Periph_TIM2;
-  timPwm2.timPort = TIM2;
-  timPwm2.timIRQ = TIM2_IRQn;
-
-  timPwm2.resolution = 1000000;
-  timPwm2.hz = 250;
-}
-
-void timerPwm201_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm2, TIM_Channel_1, duty);
-}
-uint16_t timerPwm201_read() {
-  return timPwm2.duty[0];
-}
 timPwmPort_t* openTimerPwm201(timPwmMode_t mode) {
   timerPwm2();
 
@@ -354,12 +407,12 @@ timPwmPort_t* openTimerPwm201(timPwmMode_t mode) {
 
   return &timPwm2;
 }
-void timerPwm202_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm2, TIM_Channel_2, duty);
-}
-uint16_t timerPwm202_read() {
-  return timPwm2.duty[1];
-}
+/**
+ * openTimerPwm202
+ * @note PA1, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm202(timPwmMode_t mode) {
   timerPwm2();
 
@@ -374,13 +427,12 @@ timPwmPort_t* openTimerPwm202(timPwmMode_t mode) {
 
   return &timPwm2;
 }
-
-void timerPwm203_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm2, TIM_Channel_3, duty);
-}
-uint16_t timerPwm203_read() {
-  return timPwm2.duty[2];
-}
+/**
+ * openTimerPwm203
+ * @note PA2, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm203(timPwmMode_t mode) {
   timerPwm2();
 
@@ -395,13 +447,12 @@ timPwmPort_t* openTimerPwm203(timPwmMode_t mode) {
 
   return &timPwm2;
 }
-
-void timerPwm204_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm2, TIM_Channel_4, duty);
-}
-uint16_t timerPwm204_read() {
-  return timPwm2.duty[3];
-}
+/**
+ * openTimerPwm204
+ * @note PA3, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm204(timPwmMode_t mode) {
   timerPwm2();
 
@@ -416,25 +467,45 @@ timPwmPort_t* openTimerPwm204(timPwmMode_t mode) {
 
   return &timPwm2;
 }
+void timerPwm2() {
+  timPwm2.timClock = RCC_APB1Periph_TIM2;
+  timPwm2.timPort = TIM2;
+  timPwm2.timIRQ = TIM2_IRQn;
 
-/*
- * TIMER3
+  timPwm2.resolution = 1000000;
+  timPwm2.hz = 250;
+}
+static void timerPwm201_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm2, TIM_Channel_1, duty);
+}
+static uint16_t timerPwm201_read() {
+  return timPwm2.duty[0];
+}
+static void timerPwm202_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm2, TIM_Channel_2, duty);
+}
+static uint16_t timerPwm202_read() {
+  return timPwm2.duty[1];
+}
+static void timerPwm203_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm2, TIM_Channel_3, duty);
+}
+static uint16_t timerPwm203_read() {
+  return timPwm2.duty[2];
+}
+static void timerPwm204_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm2, TIM_Channel_4, duty);
+}
+static uint16_t timerPwm204_read() {
+  return timPwm2.duty[3];
+}
+
+/**
+ * openTimerPwm301
+ * @note PA6, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
  */
-void timerPwm3() {
-  timPwm3.timClock = RCC_APB1Periph_TIM3;
-  timPwm3.timPort = TIM3;
-  timPwm3.timIRQ = TIM3_IRQn;
-
-  timPwm3.resolution = 1000000;
-  timPwm3.hz = 250;
-}
-
-void timerPwm301_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm3, TIM_Channel_1, duty);
-}
-uint16_t timerPwm301_read() {
-  return timPwm3.duty[0];
-}
 timPwmPort_t* openTimerPwm301(timPwmMode_t mode) {
   timerPwm3();
 
@@ -448,16 +519,12 @@ timPwmPort_t* openTimerPwm301(timPwmMode_t mode) {
 
   return &timPwm3;
 }
-
-/*
- * error
+/**
+ * openTimerPwm302
+ * @note PA7, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
  */
-void timerPwm302_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm3, TIM_Channel_2, duty);
-}
-uint16_t timerPwm302_read() {
-  return timPwm3.duty[1];
-}
 timPwmPort_t* openTimerPwm302(timPwmMode_t mode) {
   timerPwm3();
 
@@ -472,13 +539,12 @@ timPwmPort_t* openTimerPwm302(timPwmMode_t mode) {
 
   return &timPwm3;
 }
-
-void timerPwm303_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm3, TIM_Channel_3, duty);
-}
-uint16_t timerPwm303_read() {
-  return timPwm3.duty[2];
-}
+/**
+ * openTimerPwm303
+ * @note PB0, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm303(timPwmMode_t mode) {
   timerPwm3();
 
@@ -493,13 +559,12 @@ timPwmPort_t* openTimerPwm303(timPwmMode_t mode) {
 
   return &timPwm3;
 }
-
-void timerPwm304_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm3, TIM_Channel_4, duty);
-}
-uint16_t timerPwm304_read() {
-  return timPwm3.duty[3];
-}
+/**
+ * openTimerPwm304
+ * @note PB1, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm304(timPwmMode_t mode) {
   timerPwm3();
 
@@ -514,28 +579,45 @@ timPwmPort_t* openTimerPwm304(timPwmMode_t mode) {
 
   return &timPwm3;
 }
+static void timerPwm3() {
+  timPwm3.timClock = RCC_APB1Periph_TIM3;
+  timPwm3.timPort = TIM3;
+  timPwm3.timIRQ = TIM3_IRQn;
 
-/*
- * TIMER4
+  timPwm3.resolution = 1000000;
+  timPwm3.hz = 250;
+}
+static void timerPwm301_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm3, TIM_Channel_1, duty);
+}
+static uint16_t timerPwm301_read() {
+  return timPwm3.duty[0];
+}
+static void timerPwm302_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm3, TIM_Channel_2, duty);
+}
+static uint16_t timerPwm302_read() {
+  return timPwm3.duty[1];
+}
+static void timerPwm303_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm3, TIM_Channel_3, duty);
+}
+static uint16_t timerPwm303_read() {
+  return timPwm3.duty[2];
+}
+static void timerPwm304_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm3, TIM_Channel_4, duty);
+}
+static uint16_t timerPwm304_read() {
+  return timPwm3.duty[3];
+}
+
+/**
+ * openTimerPwm401
+ * @note PB6, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
  */
-void timerPwm4() {
-  timPwm4.timClock = RCC_APB1Periph_TIM4;
-  timPwm4.timPort = TIM4;
-  timPwm4.timIRQ = TIM4_IRQn;
-
-  timPwm4.resolution = 1000000;
-  timPwm4.hz = 250;
-}
-
-/*
- * ERROR
- */
-void timerPwm401_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm4, TIM_Channel_1, duty);
-}
-uint16_t timerPwm401_read() {
-  return timPwm4.duty[0];
-}
 timPwmPort_t* openTimerPwm401(timPwmMode_t mode) {
   timerPwm3();
 
@@ -549,16 +631,12 @@ timPwmPort_t* openTimerPwm401(timPwmMode_t mode) {
 
   return &timPwm4;
 }
-
-/*
- * ERROR
+/**
+ * openTimerPwm402
+ * @note PB7, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
  */
-void timerPwm402_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm4, TIM_Channel_2, duty);
-}
-uint16_t timerPwm402_read() {
-  return timPwm4.duty[1];
-}
 timPwmPort_t* openTimerPwm402(timPwmMode_t mode) {
   timerPwm3();
 
@@ -573,13 +651,12 @@ timPwmPort_t* openTimerPwm402(timPwmMode_t mode) {
 
   return &timPwm4;
 }
-
-void timerPwm403_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm4, TIM_Channel_3, duty);
-}
-uint16_t timerPwm403_read() {
-  return timPwm4.duty[2];
-}
+/**
+ * openTimerPwm403
+ * @note PB8, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm403(timPwmMode_t mode) {
   timerPwm4();
 
@@ -594,13 +671,12 @@ timPwmPort_t* openTimerPwm403(timPwmMode_t mode) {
 
   return &timPwm4;
 }
-
-void timerPwm404_write(uint16_t duty) {
-  timePwmOutWrite(&timPwm4, TIM_Channel_4, duty);
-}
-uint16_t timerPwm404_read() {
-  return timPwm4.duty[3];
-}
+/**
+ * openTimerPwm404
+ * @note PB9, 250Hz, 1us resolution
+ * @param mode TIM_PWM_INPUT_MODE, TIM_PWM_OUTPUT_MODE
+ * @return timPwmPort_t*
+ */
 timPwmPort_t* openTimerPwm404(timPwmMode_t mode) {
   timerPwm3();
 
@@ -615,7 +691,42 @@ timPwmPort_t* openTimerPwm404(timPwmMode_t mode) {
 
   return &timPwm4;
 }
+void timerPwm4() {
+  timPwm4.timClock = RCC_APB1Periph_TIM4;
+  timPwm4.timPort = TIM4;
+  timPwm4.timIRQ = TIM4_IRQn;
 
+  timPwm4.resolution = 1000000;
+  timPwm4.hz = 250;
+}
+void timerPwm401_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm4, TIM_Channel_1, duty);
+}
+uint16_t timerPwm401_read() {
+  return timPwm4.duty[0];
+}
+void timerPwm402_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm4, TIM_Channel_2, duty);
+}
+uint16_t timerPwm402_read() {
+  return timPwm4.duty[1];
+}
+void timerPwm403_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm4, TIM_Channel_3, duty);
+}
+uint16_t timerPwm403_read() {
+  return timPwm4.duty[2];
+}
+void timerPwm404_write(uint16_t duty) {
+  timePwmOutWrite(&timPwm4, TIM_Channel_4, duty);
+}
+uint16_t timerPwm404_read() {
+  return timPwm4.duty[3];
+}
+
+/****************************************
+ * Interrupt Handler
+ ****************************************/
 void timerHandler(timPwmPort_t* instance) {
   TIM_ICInitTypeDef TIM_ICInitStructure;
   TIM_TypeDef* timx = instance->timPort;

@@ -24,7 +24,7 @@ int main(void) {
 
   // Open Serial Port
   serialPort = openSerial3(SERIAL_INTERRPUT_MODE);
-  serialPort->printf("Hello World! main\r\n");
+  serialPort->printf("Hello World!\r\n");
 
   while (1) {
     static uint8_t i;

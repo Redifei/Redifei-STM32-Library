@@ -53,6 +53,9 @@ static void serial3_putChar(char c);
 static char serial3_getChar();
 static void serial3_Printf(char *format, ...);
 
+/****************************************
+ * Internal Functions
+ ****************************************/
 /**
  * 시리얼/유아트 포트로 데이터를 송신
  * @param instance : 사용할 시리얼/유아트 포트
@@ -148,10 +151,14 @@ static void serialUartOpen(serialUartPort_t* instance) {
   }
 }
 
+/****************************************
+ * External Functions
+ ****************************************/
 /**
- * 시리얼1 포트 초기화
+ * openSerial1
+ * @note Rx : PA10, Tx: PA9, BaudRate : 115200
  * @param mode : INTERRUPT_MODE, SERIAL_POLLING_MODE
- * @return 설정된 포트
+ * @return serialUartPort_t*
  */
 serialUartPort_t* openSerial1(serialMode_t mode) {
   serialUartPort1.rx_gpioClock = RCC_APB2Periph_GPIOA;
@@ -186,73 +193,6 @@ serialUartPort_t* openSerial1(serialMode_t mode) {
 
   return &serialUartPort1;
 }
-serialUartPort_t* openSerial3(serialMode_t mode) {
-  serialUartPort3.rx_gpioClock = RCC_APB2Periph_GPIOB;
-  serialUartPort3.rx_gpioPin = GPIO_Pin_11;
-  serialUartPort3.rx_gpioPort = GPIOB;
-
-  serialUartPort3.tx_gpioClock = RCC_APB2Periph_GPIOB;
-  serialUartPort3.tx_gpioPin = GPIO_Pin_10;
-  serialUartPort3.tx_gpioPort = GPIOB;
-
-  serialUartPort3.uartClock = RCC_APB1Periph_USART3;
-  serialUartPort3.uartPort = USART3;
-  serialUartPort3.uartIRQ = USART3_IRQn;
-
-  serialUartPort3.uartBaudrate = 115200;
-  serialUartPort3.uartStopbit = USART_StopBits_1;
-  serialUartPort3.uartParity = USART_Parity_No;
-
-  serialUartPort3.getChar = serial3_getChar;
-  serialUartPort3.putChar = serial3_putChar;
-  serialUartPort3.printf = serial3_Printf;
-  serialUartPort3.available = serial3_available;
-
-  serialUartPort3.serialMode = mode;
-
-  serialUartPort3.txQueue.buf = serialUartPort3TxBuf;
-  serialUartPort3.txQueue.size = BUF_SIZE;
-  serialUartPort3.rxQueue.buf = serialUartPort3RxBuf;
-  serialUartPort3.rxQueue.size = BUF_SIZE;
-
-  serialUartOpen(&serialUartPort3);
-
-  return &serialUartPort3;
-}
-serialUartPort_t* openSerial2(serialMode_t mode) {
-  serialUartPort2.rx_gpioClock = RCC_APB2Periph_GPIOA;
-  serialUartPort2.rx_gpioPin = GPIO_Pin_10;
-  serialUartPort2.rx_gpioPort = GPIOA;
-
-  serialUartPort2.tx_gpioClock = RCC_APB2Periph_GPIOA;
-  serialUartPort2.tx_gpioPin = GPIO_Pin_9;
-  serialUartPort2.tx_gpioPort = GPIOA;
-
-  serialUartPort2.uartClock = RCC_APB2Periph_USART1;
-  serialUartPort2.uartPort = USART2;
-  serialUartPort2.uartIRQ = USART2_IRQn;
-
-  serialUartPort2.uartBaudrate = 115200;
-  serialUartPort2.uartStopbit = USART_StopBits_1;
-  serialUartPort2.uartParity = USART_Parity_No;
-
-  serialUartPort2.getChar = serial2_getChar;
-  serialUartPort2.putChar = serial2_putChar;
-  serialUartPort2.printf = serial2_Printf;
-  serialUartPort2.available = serial2_available;
-
-  serialUartPort2.serialMode = mode;
-
-  serialUartPort2.txQueue.buf = serialUartPort2TxBuf;
-  serialUartPort2.txQueue.size = BUF_SIZE;
-  serialUartPort2.rxQueue.buf = serialUartPort2RxBuf;
-  serialUartPort2.rxQueue.size = BUF_SIZE;
-
-  serialUartOpen(&serialUartPort2);
-
-  return &serialUartPort2;
-}
-
 /**
  * 시리얼1 포트에 수신 버퍼에 데이터가 있는지 확인
  * @return 데이터의 유무
@@ -292,7 +232,45 @@ static void serial1_Printf(char *format, ...) {
   tfp_format(NULL, serial1_putc, format, va);
   va_end(va);
 }
+/**
+ * openSerial2
+ * @note Rx : PA3, Tx: PA2, BaudRate : 115200
+ * @param mode : INTERRUPT_MODE, SERIAL_POLLING_MODE
+ * @return serialUartPort_t*
+ */
+serialUartPort_t* openSerial2(serialMode_t mode) {
+  serialUartPort2.rx_gpioClock = RCC_APB2Periph_GPIOA;
+  serialUartPort2.rx_gpioPin = GPIO_Pin_3;
+  serialUartPort2.rx_gpioPort = GPIOA;
 
+  serialUartPort2.tx_gpioClock = RCC_APB2Periph_GPIOA;
+  serialUartPort2.tx_gpioPin = GPIO_Pin_2;
+  serialUartPort2.tx_gpioPort = GPIOA;
+
+  serialUartPort2.uartClock = RCC_APB2Periph_USART1;
+  serialUartPort2.uartPort = USART2;
+  serialUartPort2.uartIRQ = USART2_IRQn;
+
+  serialUartPort2.uartBaudrate = 115200;
+  serialUartPort2.uartStopbit = USART_StopBits_1;
+  serialUartPort2.uartParity = USART_Parity_No;
+
+  serialUartPort2.getChar = serial2_getChar;
+  serialUartPort2.putChar = serial2_putChar;
+  serialUartPort2.printf = serial2_Printf;
+  serialUartPort2.available = serial2_available;
+
+  serialUartPort2.serialMode = mode;
+
+  serialUartPort2.txQueue.buf = serialUartPort2TxBuf;
+  serialUartPort2.txQueue.size = BUF_SIZE;
+  serialUartPort2.rxQueue.buf = serialUartPort2RxBuf;
+  serialUartPort2.rxQueue.size = BUF_SIZE;
+
+  serialUartOpen(&serialUartPort2);
+
+  return &serialUartPort2;
+}
 static bool serial2_available() {
   return serialUartPort2.rxQueue.head != serialUartPort2.rxQueue.tail;
 }
@@ -311,7 +289,45 @@ static void serial2_Printf(char *format, ...) {
   tfp_format(NULL, serial2_putc, format, va);
   va_end(va);
 }
+/**
+ * openSerial3
+ * @note Rx : PB11, Tx: PB10, BaudRate : 115200
+ * @param mode : INTERRUPT_MODE, SERIAL_POLLING_MODE
+ * @return serialUartPort_t*
+ */
+serialUartPort_t* openSerial3(serialMode_t mode) {
+  serialUartPort3.rx_gpioClock = RCC_APB2Periph_GPIOB;
+  serialUartPort3.rx_gpioPin = GPIO_Pin_11;
+  serialUartPort3.rx_gpioPort = GPIOB;
 
+  serialUartPort3.tx_gpioClock = RCC_APB2Periph_GPIOB;
+  serialUartPort3.tx_gpioPin = GPIO_Pin_10;
+  serialUartPort3.tx_gpioPort = GPIOB;
+
+  serialUartPort3.uartClock = RCC_APB1Periph_USART3;
+  serialUartPort3.uartPort = USART3;
+  serialUartPort3.uartIRQ = USART3_IRQn;
+
+  serialUartPort3.uartBaudrate = 115200;
+  serialUartPort3.uartStopbit = USART_StopBits_1;
+  serialUartPort3.uartParity = USART_Parity_No;
+
+  serialUartPort3.getChar = serial3_getChar;
+  serialUartPort3.putChar = serial3_putChar;
+  serialUartPort3.printf = serial3_Printf;
+  serialUartPort3.available = serial3_available;
+
+  serialUartPort3.serialMode = mode;
+
+  serialUartPort3.txQueue.buf = serialUartPort3TxBuf;
+  serialUartPort3.txQueue.size = BUF_SIZE;
+  serialUartPort3.rxQueue.buf = serialUartPort3RxBuf;
+  serialUartPort3.rxQueue.size = BUF_SIZE;
+
+  serialUartOpen(&serialUartPort3);
+
+  return &serialUartPort3;
+}
 static bool serial3_available() {
   return serialUartPort3.rxQueue.head != serialUartPort3.rxQueue.tail;
 }
@@ -331,6 +347,9 @@ static void serial3_Printf(char *format, ...) {
   va_end(va);
 }
 
+/****************************************
+ * Interrupt Handler
+ ****************************************/
 /**
  * 시리얼/유아트 포트 인터럽트 핸들러
  * @param instance 호출된 시리얼/유아트 포트

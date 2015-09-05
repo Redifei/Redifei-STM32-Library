@@ -49,6 +49,9 @@ static uint8_t I2C2_read1Byte(uint8_t addr, uint8_t reg, uint8_t* buf);
 
 static void i2cOpen(i2cPort_t* instance);
 
+/****************************************
+ * Internal Functions
+ ****************************************/
 static uint8_t i2cWriteBytes(i2cPort_t* instance, uint8_t addr, uint8_t reg, uint8_t len, uint8_t *data) {
   uint32_t timeout = I2C_DEFAULT_TIMEOUT;
   I2C_TypeDef* I2Cx = instance->i2cPort;
@@ -303,6 +306,9 @@ static void i2cOpen(i2cPort_t* instance) {
   I2C_Cmd(instance->i2cPort, ENABLE);
 }
 
+/****************************************
+ * External Functions
+ ****************************************/
 /**
  * openI2C1
  * @note SCL : PB6, SDA : PB7, Speed : 400k
@@ -415,6 +421,9 @@ static uint8_t I2C2_read1Byte(uint8_t addr, uint8_t reg, uint8_t* buf) {
   return i2cReadBytes(&i2cPort2, addr, reg, 1, buf);
 }
 
+/****************************************
+ * Interrupt Handler
+ ****************************************/
 static void i2c_er_handler(i2cPort_t* instance) {
   I2C_TypeDef* I2Cx = instance->i2cPort;
 

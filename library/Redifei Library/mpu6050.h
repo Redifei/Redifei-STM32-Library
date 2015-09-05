@@ -82,7 +82,15 @@
 #define MPU6050_WHO_AM_I_DEFAULT        0x68
 
 typedef struct {
+  uint8_t (*write1Byte)(uint8_t addr, uint8_t reg, uint8_t data);
+  uint8_t (*readBytes)(uint8_t addr, uint8_t reg, uint8_t len, uint8_t* buf);
+  uint8_t (*read1Byte)(uint8_t addr, uint8_t reg, uint8_t* buf);
+} i2cMpu6050_t;
+
+typedef struct {
   uint8_t deviceAddr;
+
+  i2cMpu6050_t i2c;
 
   void (*accInit)();
   bool (*accDetect)();

@@ -43,5 +43,5 @@ typedef struct {
   bool (*available)();
 } vComPort_t;
 
-void vComPush(uint8_t c); // This Function only use in hw_config.c
+void vComPush(char c); // This Function only use in hw_config.c
 vComPort_t* openVCom();
