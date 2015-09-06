@@ -372,12 +372,10 @@ static void serial3_Printf(char *format, ...) {
  */
 static void serialUart_handler(serialUartPort_t* instance) {
   if (USART_GetITStatus(instance->uartPort, USART_IT_RXNE) != RESET) {
-    USART_ClearITPendingBit(instance->uartPort, USART_IT_RXNE);
     instance->rxQueue.buf[instance->rxQueue.head++] = USART_ReceiveData(instance->uartPort);
     instance->rxQueue.head %= instance->rxQueue.size;
   }
   if (USART_GetITStatus(instance->uartPort, USART_IT_TXE) != RESET) {
-    USART_ClearITPendingBit(instance->uartPort, USART_IT_TXE);
     USART_SendData(instance->uartPort, instance->txQueue.buf[instance->txQueue.tail++]);
     instance->txQueue.tail %= instance->txQueue.size;
     if (instance->txQueue.head == instance->txQueue.tail)
