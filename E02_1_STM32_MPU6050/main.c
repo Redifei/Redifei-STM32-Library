@@ -1,4 +1,7 @@
 /*
+ * WILL BE CHANGE TO VERSION2 LIBRARY
+ *
+ *
  * Redifei: E02_1 MPU6050 Library Example
  ******************************************************************************
  * This file is part of Redifei Library.

@@ -434,7 +434,7 @@ void USB_Receive_Data(uint8_t* data_buffer, uint8_t Nb_bytes) {
   uint8_t UartData;
   //-- PC로부터 받은 데이터 저장
   for (i = 0; i < Nb_bytes; i++) {
-    vComPush(*(data_buffer + i));
+    vcomQueuePush_in_hwConfig(*(data_buffer + i));
   }
 }
 

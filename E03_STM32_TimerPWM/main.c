@@ -1,56 +1,75 @@
 /*
- * Redifei: E03 TimerPWM Library Example
- ******************************************************************************
- * This file is part of Redifei Library.
- *
- * Redifei Library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Redifei Library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Redifei Library.  If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************
- */
-#include <stm32f10x_conf.h>
+ main.c - main for stm32_timerPwm
+ This file is part of Redifei STM32 Library.
 
+ Redifei STM32 Library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Redifei STM32 Library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Redifei STM32 Library.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <stdlib.h>
+#include <stm32f10x_conf.h>
 #include "systickTimer.h"
+#include "serialUart.h"
 #include "i2c.h"
-#include "pwm.h"
-#include "printf.h"
-#include "serial.h"
+#include "timerPwm.h"
 #include "vcom.h"
 
-serialUartPort_t* serialPort;
-vComPort_t* vcomPort;
-i2cPort_t* i2cPort;
-timPwmPort_t* pwmInPort;
-timPwmPort_t* pwmOutPort;
+red_serialUartPort_t* redSerial;
+
+void assert_failed(uint8_t* file, uint32_t line) {
+  if(redSerial != NULL)
+    redSerial->printf(redSerial, "Assert fail at File %s Line %d\r\n", file, (uint16_t)line);
+  while(1);
+}
+
+void callback(uint8_t chan) {
+
+}
 
 int main(void) {
-  // TimerPWM Library Example
-  // Config systemTick Timer
   systickTimerConfig();
 
-  // Open Serial Port
-  serialPort = openSerial3(SERIAL_INTERRPUT_MODE);
-  serialPort->printf("Hello World!\r\n");
+  // Init SerialPort
+  red_serialUart_userSetting_t redSerialUserSetting = {
+      .serialMode = RED_SERIAL_POLLING_MODE,
+      .baudrate = 115200,
+      .parity = USART_Parity_No,
+      .stopbit = USART_StopBits_1,
+  };
+  redSerial = redSerialUartInit(RED_SERIAL_UART_PORT_3, &redSerialUserSetting);
 
-  // Open TimerPWM
-  pwmInPort = openTimerPwm101(TIM_PWM_INPUT_MODE);
-  pwmOutPort = openTimerPwm301(TIM_PWM_OUTPUT_MODE);
-  pwmOutPort = openTimerPwm302(TIM_PWM_OUTPUT_MODE);
+  // Init TimerPwm Input
+  red_timPwm_userSetting_t redTimerPwmInputUserSetting = {
+      .timPwmMode = RED_TIMER_PWM_INPUT_MODE,
+      .resolution = 1000000,
+      .callback = callback,
+  };
+  red_timPwmPort_t* redTimerPwmIn1 = redTimerPwmInit(RED_TIMER1_PWM_CHANNEL_1, &redTimerPwmInputUserSetting);
 
-  pwmOutPort->chan1Write(500);
-  pwmOutPort->chan2Write(1500);
+  // Init TimerPwm Output
+  red_timPwm_userSetting_t redTimerPwmOutPutUserSetting = {
+      .timPwmMode = RED_TIMER_PWM_OUTPUT_MODE,
+      .resolution = 1000000,
+      .hz = 250,
+  };
+  red_timPwmPort_t* redTimerPwmOut1 = redTimerPwmInit(RED_TIMER3_PWM_CHANNEL_1, &redTimerPwmOutPutUserSetting);
+  redTimerPwmOut1->write(redTimerPwmOut1, 1234);
+
+  redSerial->printf(redSerial, "Hello World!!\r\n");
+  delay(1000);
 
   while (1) {
-    serialPort->printf("%d\r\n", pwmInPort->chan1Read());
+    redSerial->printf(redSerial, "%d\r\n", redTimerPwmIn4->read(redTimerPwmIn1));
     delay(100);
   }
 }
