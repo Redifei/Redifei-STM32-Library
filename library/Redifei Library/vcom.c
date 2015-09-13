@@ -39,10 +39,14 @@ static red_vcomPortBuf_t vcomPortBuf[RED_VCOM_PORT_MAX];
 // TODO: this exception functions to be deleted
 // Those use when receive data for usb
 void red_queuePush(struct red_vcomPort* this, char c) {
+  assert_param(IS_CONFIGED_VCOM_PORT(this->setting));
+
   this->setting->queue.buf[this->setting->queue.head++] = c;
   this->setting->queue.head %= this->setting->queue.size;
 }
 char red_queuePop(struct red_vcomPort* this) {
+  assert_param(IS_CONFIGED_VCOM_PORT(this->setting));
+
   char c = '\0';
   if (this->setting->queue.head != this->setting->queue.tail) {
     c = this->setting->queue.buf[this->setting->queue.tail++];
@@ -57,21 +61,29 @@ void vcomQueuePush_in_hwConfig(char c) {
 
 // FIXME: have error
 static bool red_available(struct red_vcomPort* this) {
+  assert_param(IS_CONFIGED_VCOM_PORT(this->setting));
+
   return this->setting->queue.head != this->setting->queue.tail;
 }
 static void red_putChar(struct red_vcomPort* this, char c) {
+  assert_param(IS_CONFIGED_VCOM_PORT(this->setting));
+
 // XXX: why used if?
 //  if (bDeviceState == CONFIGURED) {
   USB_Send_Data(c);
 //  }
 }
 static char red_getChar(struct red_vcomPort* this) {
+  assert_param(IS_CONFIGED_VCOM_PORT(this->setting));
+
   return red_queuePop(this);
 }
 static void red_putc(void *p, char c) {
   red_putChar(vcomPrintfPort, c);
 }
 static void red_Printf(struct red_vcomPort* this, char *format, ...) {
+  assert_param(IS_CONFIGED_VCOM_PORT(this->setting));
+
   vcomPrintfPort = this;
   va_list va;
   va_start(va, format);
@@ -80,6 +92,8 @@ static void red_Printf(struct red_vcomPort* this, char *format, ...) {
 }
 
 static void red_vcomConfig(struct red_vcomPort* this) {
+  assert_param(IS_CONFIGED_VCOM_PORT(this->setting));
+
   Set_System();
   Set_USBClock();
   USB_Interrupts_Config();
@@ -87,6 +101,8 @@ static void red_vcomConfig(struct red_vcomPort* this) {
 }
 
 red_vcomPort_t* redVcomInit(uint8_t vcomPortNum, red_vcom_userSetting_t* userSetting) {
+  assert_param(IS_VAILD_VCOM_PORT_NUM(vcomPortNum));
+
   red_vcomPort_t* vcomPort = &vcomPorts[vcomPortNum];
 
   vcomSettings[vcomPortNum].hw = &redVcomWareMap[vcomPortNum];

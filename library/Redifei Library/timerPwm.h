@@ -103,4 +103,9 @@ typedef struct red_timPwmPort {
   uint16_t (*read)(struct red_timPwmPort* this);
 } red_timPwmPort_t;
 
+#define IS_CONFIGED_TIMER_PORT(THIS_SETTING) (THIS_SETTING != NULL)
+#define IS_INPUT_TIMER_PORT(TIMER_PORT) (TIMER_PORT == RED_TIMER_PWM_INPUT_MODE)
+#define IS_OUTPUT_TIMER_PORT(TIMER_PORT) (TIMER_PORT == RED_TIMER_PWM_OUTPUT_MODE)
+#define IS_VAILD_TIMER_PORT_NUM(TIMER_NUM) (TIMER_NUM < RED_TIMER_PWM_CHANNEL_MAX)
+
 red_timPwmPort_t* redTimerPwmInit(uint8_t timPwmPortNum, red_timPwm_userSetting_t* userSetting);

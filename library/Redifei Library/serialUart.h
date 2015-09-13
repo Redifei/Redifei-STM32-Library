@@ -81,4 +81,7 @@ typedef struct red_serialUartPort {
   bool (*available)(struct red_serialUartPort* this);
 } red_serialUartPort_t;
 
+#define IS_CONFIGED_SERIAL_PORT(THIS_SETTING) (THIS_SETTING != NULL)
+#define IS_VAILD_SERIAL_PORT_NUM(SERIAL_NUM) (SERIAL_NUM < RED_SERIAL_UART_PORT_MAX)
+
 red_serialUartPort_t* redSerialUartInit(uint8_t serialUartPortNum, red_serialUart_userSetting_t* userSetting);

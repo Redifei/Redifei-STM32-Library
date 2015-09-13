@@ -35,10 +35,14 @@ static red_serialUart_setting_t serialUartSettings[RED_SERIAL_UART_PORT_MAX];
 static red_serialUartPortBuf_t serialUartPortBuf[RED_SERIAL_UART_PORT_MAX];
 
 static bool red_available(struct red_serialUartPort* this) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+
   return this->setting->rxQueue.head != this->setting->rxQueue.tail;
 }
 
 static void red_putchar(struct red_serialUartPort* this, char c) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+
   const red_serialUart_hardware_t* serialHW = this->setting->hw;
   red_serialUart_userSetting_t* serialUserSetting = this->setting->userSetting;
 
@@ -55,6 +59,8 @@ static void red_putchar(struct red_serialUartPort* this, char c) {
 }
 
 static char red_getchar(struct red_serialUartPort* this) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+
   char c = '\0';
   const red_serialUart_hardware_t* serialHW = this->setting->hw;
   red_serialUart_userSetting_t* serialUserSetting = this->setting->userSetting;
@@ -83,6 +89,8 @@ static void red_putc(void *p, char c) {
 }
 
 void red_Printf(struct red_serialUartPort* this, char *format, ...) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+
   serialPrintfPort = this;
   va_list va;
   va_start(va, format);
@@ -91,6 +99,8 @@ void red_Printf(struct red_serialUartPort* this, char *format, ...) {
 }
 
 static void red_serialUartConfig(struct red_serialUartPort* this) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+
   const red_serialUart_hardware_t* serialHW = this->setting->hw;
   red_serialUart_userSetting_t* serialUserSetting = this->setting->userSetting;
 
@@ -141,6 +151,8 @@ static void red_serialUartConfig(struct red_serialUartPort* this) {
 }
 
 red_serialUartPort_t* redSerialUartInit(uint8_t serialUartPortNum, red_serialUart_userSetting_t* userSetting) {
+  assert_param(IS_VAILD_SERIAL_PORT_NUM(serialUartPortNum));
+
   red_serialUartPort_t* serialUartPort = &serialUartPorts[serialUartPortNum];
 
   serialUartSettings[serialUartPortNum].hw = &redSerialUartHardWareMap[serialUartPortNum];
@@ -162,6 +174,8 @@ red_serialUartPort_t* redSerialUartInit(uint8_t serialUartPortNum, red_serialUar
 }
 
 static void red_serialUart_handler(struct red_serialUartPort* this) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+
   const red_serialUart_hardware_t* serialHW = this->setting->hw;
 
   if (USART_GetITStatus(serialHW->uartPort, USART_IT_RXNE) != RESET) {

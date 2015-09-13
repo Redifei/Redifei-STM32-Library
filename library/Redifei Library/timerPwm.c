@@ -21,10 +21,6 @@
 #include <stm32f10x_conf.h>
 #include "timerPwm.h"
 
-#include "serialUart.h"
-
-extern red_serialUartPort_t* redSerial;
-
 static red_timPwmPort_t timPwmPorts[RED_TIMER_PWM_CHANNEL_MAX] = { NULL, };
 static red_timPwm_setting_t timPwmSettings[RED_TIMER_PWM_CHANNEL_MAX] = { NULL, };
 
@@ -34,7 +30,7 @@ static red_timPwm_setting_t timPwmSettings[RED_TIMER_PWM_CHANNEL_MAX] = { NULL, 
  * @param this : red_timPwmPort object
  */
 void red_timeBaseConfig(struct red_timPwmPort* this) {
-  assert_param(this->setting != NULL);
+  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
 
   const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
   red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
@@ -70,10 +66,11 @@ void red_timeBaseConfig(struct red_timPwmPort* this) {
  * @param this : red_timPwmPort object
  */
 void red_timPwmOutPortConfig(struct red_timPwmPort* this) {
-  assert_param(this->setting != NULL);
+  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
+  assert_param(IS_OUTPUT_TIMER_PORT(this->setting->userSetting->timPwmMode));
+
   const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
   red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
-  assert_param(timerPwmSetting->timPwmMode == RED_TIMER_PWM_OUTPUT_MODE);
 
   TIM_TypeDef* timx = timerPwmHW->timPort;
 
@@ -130,10 +127,12 @@ void red_timPwmOutPortConfig(struct red_timPwmPort* this) {
  * @param this : red_timPwmPort object
  */
 void red_timPwmInPortConfig(struct red_timPwmPort* this) {
-  assert_param(this->setting != NULL);
+  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
+  assert_param(IS_INPUT_TIMER_PORT(this->setting->userSetting->timPwmMode));
+
   const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
   red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
-  assert_param(timerPwmSetting->timPwmMode == RED_TIMER_PWM_INPUT_MODE);
+
 
   TIM_TypeDef* timx = timerPwmHW->timPort;
 
@@ -189,10 +188,11 @@ void red_timPwmInPortConfig(struct red_timPwmPort* this) {
  * @param duty : write pwm out duty
  */
 void red_timePwmOutWrite(struct red_timPwmPort* this, uint16_t duty) {
-  assert_param(this->setting != NULL);
+  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
+  assert_param(IS_OUTPUT_TIMER_PORT(this->setting->userSetting->timPwmMode));
+
   const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
   red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
-  assert_param(timerPwmSetting->timPwmMode == RED_TIMER_PWM_OUTPUT_MODE);
 
   // only Output Mode
   if(timerPwmSetting->timPwmMode != RED_TIMER_PWM_OUTPUT_MODE)
@@ -225,9 +225,9 @@ void red_timePwmOutWrite(struct red_timPwmPort* this, uint16_t duty) {
  * @return read pwm in duty
  */
 uint16_t red_timePwmInRead(struct red_timPwmPort* this) {
-  assert_param(this->setting != NULL);
-  red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
-  assert_param(timerPwmSetting->timPwmMode == RED_TIMER_PWM_INPUT_MODE);
+  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
+  assert_param(IS_INPUT_TIMER_PORT(this->setting->userSetting->timPwmMode));
+
   // read pwm duty
   return this->setting->duty;
 }
@@ -242,6 +242,8 @@ uint16_t red_timePwmInRead(struct red_timPwmPort* this) {
  * @return red_timPwmPort object
  */
 red_timPwmPort_t* redTimerPwmInit(uint8_t timPwmPortNum, red_timPwm_userSetting_t* userSetting) {
+  assert_param(IS_VAILD_TIMER_PORT_NUM(timPwmPortNum));
+
   red_timPwmPort_t* timPwmPort = &timPwmPorts[timPwmPortNum];
 
   timPwmSettings[timPwmPortNum].hw = &redTimerPwmHardWareMap[timPwmPortNum];

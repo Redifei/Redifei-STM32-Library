@@ -30,6 +30,11 @@ typedef enum {
   RED_I2C_INTERRPUT_MODE, RED_I2C_POLLING_MODE, RED_I2C_SOFTWARE_MODE,
 } red_i2cMode_t;
 
+enum {
+  I2C_DIRECTION_TX = 0,
+  I2C_DIRECTION_RX,
+};
+
 typedef struct {
   GPIO_TypeDef* sda_gpioPort;
   uint32_t sda_gpioClock;
@@ -54,27 +59,37 @@ static const red_i2c_hardware_t redI2cHardWareMap[RED_I2C_PORT_MAX] = {
 typedef struct {
   red_i2cMode_t i2cMode;
   uint32_t clockSpeed;
+  uint32_t timeOut;
 //  uint16_t bufSize;
 } red_i2c_userSetting_t;
 
 typedef struct {
   const red_i2c_hardware_t* hw;
   red_i2c_userSetting_t* userSetting;
-  uint8_t i2cDirection;
-  uint8_t i2cLength;
-  uint8_t busy;
-  uint8_t error;
-  uint8_t deviceIDSent;
-  uint16_t errCount;
-  Qtype_t queue;
+
+  uint8_t I2CDirection;
+  uint8_t Address;
+  uint16_t NumbOfBytes;
+
+  uint8_t index;
+  uint8_t* buffer;
+
+  uint8_t finish; // TODO
+  uint8_t generateStop; // TODO
 } red_i2c_setting_t;
 
 typedef struct red_i2cPort {
   red_i2c_setting_t* setting;
-  uint8_t (*writeBytes)(struct red_i2cPort* this, uint8_t addr, uint8_t reg, uint8_t len, uint8_t* data);
-  uint8_t (*write1Byte)(struct red_i2cPort* this, uint8_t addr, uint8_t reg, uint8_t data);
-  uint8_t (*readBytes)(struct red_i2cPort* this, uint8_t addr, uint8_t reg, uint8_t len, uint8_t* buf);
-  uint8_t (*read1Byte)(struct red_i2cPort* this, uint8_t addr, uint8_t reg, uint8_t* buf);
+  bool (*reset)(struct red_i2cPort* this);
+  bool (*readBytes)(struct red_i2cPort* this, uint8_t SlaveAddress, uint8_t NumByteToRead, uint8_t* pBuffer);
+  bool (*read1Byte)(struct red_i2cPort* this, uint8_t SlaveAddress, uint8_t* pBuffer);
+  bool (*writeBytes)(struct red_i2cPort* this, uint8_t SlaveAddress, uint8_t NumByteToWrite, uint8_t* pBuffer);
+  bool (*write1Byte)(struct red_i2cPort* this, uint8_t SlaveAddress, uint8_t buffer);
 } red_i2cPort_t;
+
+#define I2C_DEFAULT_TIMEOUT 30000
+
+#define IS_CONFIGED_I2C_PORT(THIS_SETTING) (THIS_SETTING != NULL)
+#define IS_VAILD_I2C_PORT_NUM(I2C_NUM) (I2C_NUM < RED_I2C_PORT_MAX)
 
 red_i2cPort_t* redI2cInit(uint8_t i2cPortNum, red_i2c_userSetting_t* userSetting);

@@ -53,5 +53,8 @@ typedef struct red_vcomPort {
   bool (*available)(struct red_vcomPort* this);
 } red_vcomPort_t;
 
+#define IS_CONFIGED_VCOM_PORT(THIS_SETTING) (THIS_SETTING != NULL)
+#define IS_VAILD_VCOM_PORT_NUM(VCOM_NUM) (VCOM_NUM < RED_VCOM_PORT_MAX)
+
 void vcomQueuePush_in_hwConfig(char c); // This Function only use in hw_config.c
 red_vcomPort_t* redVcomInit(uint8_t vcomPortNum, red_vcom_userSetting_t* userSetting);
