@@ -20,20 +20,15 @@
 
 #include "queue.h"
 
-enum {
+typedef enum {
   RED_I2C_PORT_1,
   RED_I2C_PORT_2,
   RED_I2C_PORT_MAX,
-};
+} red_i2cDevices;
 
 typedef enum {
   RED_I2C_INTERRPUT_MODE, RED_I2C_POLLING_MODE, RED_I2C_SOFTWARE_MODE,
 } red_i2cMode_t;
-
-enum {
-  I2C_DIRECTION_TX = 0,
-  I2C_DIRECTION_RX,
-};
 
 typedef struct {
   GPIO_TypeDef* sda_gpioPort;
@@ -60,36 +55,36 @@ typedef struct {
   red_i2cMode_t i2cMode;
   uint32_t clockSpeed;
   uint32_t timeOut;
-//  uint16_t bufSize;
+  void (*callback)(uint8_t chan);
 } red_i2c_userSetting_t;
 
 typedef struct {
   const red_i2c_hardware_t* hw;
   red_i2c_userSetting_t* userSetting;
 
-  uint8_t I2CDirection;
-  uint8_t Address;
-  uint16_t NumbOfBytes;
+  uint8_t direction;
+  uint8_t address;
+  uint16_t numbOfBytes;
 
   uint8_t index;
   uint8_t* buffer;
 
   uint8_t finish; // TODO
   uint8_t generateStop; // TODO
-} red_i2c_setting_t;
+} red_i2c_param_t;
 
-typedef struct red_i2cPort {
-  red_i2c_setting_t* setting;
-  bool (*reset)(struct red_i2cPort* this);
-  bool (*readBytes)(struct red_i2cPort* this, uint8_t SlaveAddress, uint8_t NumByteToRead, uint8_t* pBuffer);
-  bool (*read1Byte)(struct red_i2cPort* this, uint8_t SlaveAddress, uint8_t* pBuffer);
-  bool (*writeBytes)(struct red_i2cPort* this, uint8_t SlaveAddress, uint8_t NumByteToWrite, uint8_t* pBuffer);
-  bool (*write1Byte)(struct red_i2cPort* this, uint8_t SlaveAddress, uint8_t buffer);
-} red_i2cPort_t;
-
-#define I2C_DEFAULT_TIMEOUT 30000
+typedef struct red_i2cDevice {
+  red_i2c_param_t* param;
+  bool (*reset)(struct red_i2cDevice* this);
+  bool (*readBytes)(struct red_i2cDevice* this, uint8_t SlaveAddress, uint8_t NumByteToRead, uint8_t* pBuffer);
+  bool (*read1Byte)(struct red_i2cDevice* this, uint8_t SlaveAddress, uint8_t* pBuffer);
+  bool (*writeBytes)(struct red_i2cDevice* this, uint8_t SlaveAddress, uint8_t NumByteToWrite, uint8_t* pBuffer);
+  bool (*write1Byte)(struct red_i2cDevice* this, uint8_t SlaveAddress, uint8_t buffer);
+} red_i2cDevice_t;
 
 #define IS_CONFIGED_I2C_PORT(THIS_SETTING) (THIS_SETTING != NULL)
 #define IS_VAILD_I2C_PORT_NUM(I2C_NUM) (I2C_NUM < RED_I2C_PORT_MAX)
 
-red_i2cPort_t* redI2cInit(uint8_t i2cPortNum, red_i2c_userSetting_t* userSetting);
+#define I2C_DEFAULT_TIMEOUT 30000
+
+red_i2cDevice_t* redI2cInit(uint8_t i2cPortNum, red_i2c_userSetting_t* userSetting);

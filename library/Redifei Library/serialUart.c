@@ -29,57 +29,60 @@ typedef struct {
   uint8_t rxBuf[BUF_SIZE];
 } red_serialUartPortBuf_t;
 
-static red_serialUartPort_t* serialPrintfPort;
-static red_serialUartPort_t serialUartPorts[RED_SERIAL_UART_PORT_MAX];
-static red_serialUart_setting_t serialUartSettings[RED_SERIAL_UART_PORT_MAX];
+static red_serialUartDevice_t* serialPrintfPort;
+static red_serialUartDevice_t serialUartPorts[RED_SERIAL_UART_PORT_MAX];
+static red_serialUart_param_t serialUartSettings[RED_SERIAL_UART_PORT_MAX];
 static red_serialUartPortBuf_t serialUartPortBuf[RED_SERIAL_UART_PORT_MAX];
 
-static bool red_available(struct red_serialUartPort* this) {
-  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+static bool red_available(struct red_serialUartDevice* this) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->param));
 
-  return this->setting->rxQueue.head != this->setting->rxQueue.tail;
+  red_serialUart_param_t* param = this->param;
+  return param->rxQueue.head != param->rxQueue.tail;
 }
 
-static void red_putchar(struct red_serialUartPort* this, char c) {
-  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+static void red_putchar(struct red_serialUartDevice* this, char c) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->param));
 
-  const red_serialUart_hardware_t* serialHW = this->setting->hw;
-  red_serialUart_userSetting_t* serialUserSetting = this->setting->userSetting;
+  red_serialUart_param_t* param = this->param;
+  const red_serialUart_hardware_t* hw = param->hw;
+  red_serialUart_userSetting_t* userSetting = param->userSetting;
 
-  if (serialUserSetting->serialMode == RED_SERIAL_INTERRPUT_MODE) {
-    this->setting->txQueue.buf[this->setting->txQueue.head++] = c;
-    this->setting->txQueue.head %= this->setting->txQueue.size;
-    USART_ITConfig(serialHW->uartPort, USART_IT_TXE, ENABLE);
+  if (userSetting->serialMode == RED_SERIAL_INTERRPUT_MODE) {
+    param->txQueue.buf[param->txQueue.head++] = c;
+    param->txQueue.head %= param->txQueue.size;
+    USART_ITConfig(hw->uartPort, USART_IT_TXE, ENABLE);
   }
-  else if (serialUserSetting->serialMode == RED_SERIAL_POLLING_MODE) {
-    USART_SendData(serialHW->uartPort, c);
-    while (USART_GetFlagStatus(serialHW->uartPort, USART_FLAG_TXE) == RESET)
+  else if (userSetting->serialMode == RED_SERIAL_POLLING_MODE) {
+    USART_SendData(hw->uartPort, c);
+    while (USART_GetFlagStatus(hw->uartPort, USART_FLAG_TXE) == RESET)
       ;
   }
 }
 
-static char red_getchar(struct red_serialUartPort* this) {
-  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+static char red_getchar(struct red_serialUartDevice* this) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->param));
 
   char c = '\0';
-  const red_serialUart_hardware_t* serialHW = this->setting->hw;
-  red_serialUart_userSetting_t* serialUserSetting = this->setting->userSetting;
+  red_serialUart_param_t* param = this->param;
+  const red_serialUart_hardware_t* hw = param->hw;
+  red_serialUart_userSetting_t* userSetting = param->userSetting;
 
-  if (serialUserSetting->serialMode == RED_SERIAL_INTERRPUT_MODE) {
+  if (userSetting->serialMode == RED_SERIAL_INTERRPUT_MODE) {
     while (1) {
-      if (this->setting->rxQueue.head != this->setting->rxQueue.tail) {
-        c = this->setting->rxQueue.buf[this->setting->rxQueue.tail++];
-        this->setting->rxQueue.tail %= this->setting->rxQueue.size;
+      if (param->rxQueue.head != param->rxQueue.tail) {
+        c = param->rxQueue.buf[param->rxQueue.tail++];
+        param->rxQueue.tail %= param->rxQueue.size;
       }
 //    if (c != '\0') // wait when input data via serial
       break;
     }
   }
-  else if (serialUserSetting->serialMode == RED_SERIAL_POLLING_MODE) {
+  else if (userSetting->serialMode == RED_SERIAL_POLLING_MODE) {
     char c = '\0';
-    while (USART_GetFlagStatus(serialHW->uartPort, USART_FLAG_RXNE) == RESET)
+    while (USART_GetFlagStatus(hw->uartPort, USART_FLAG_RXNE) == RESET)
       ;
-    c = (char) USART_ReceiveData(serialHW->uartPort);
+    c = (char) USART_ReceiveData(hw->uartPort);
   }
   return c;
 }
@@ -88,8 +91,8 @@ static void red_putc(void *p, char c) {
   red_putchar(serialPrintfPort, c);
 }
 
-void red_Printf(struct red_serialUartPort* this, char *format, ...) {
-  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+void red_Printf(struct red_serialUartDevice* this, char *format, ...) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->param));
 
   serialPrintfPort = this;
   va_list va;
@@ -98,71 +101,72 @@ void red_Printf(struct red_serialUartPort* this, char *format, ...) {
   va_end(va);
 }
 
-static void red_serialUartConfig(struct red_serialUartPort* this) {
-  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+static void red_serialUartConfig(struct red_serialUartDevice* this) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->param));
 
-  const red_serialUart_hardware_t* serialHW = this->setting->hw;
-  red_serialUart_userSetting_t* serialUserSetting = this->setting->userSetting;
+  red_serialUart_param_t* param = this->param;
+  const red_serialUart_hardware_t* hw = param->hw;
+  red_serialUart_userSetting_t* userSetting = param->userSetting;
 
-  if (serialUserSetting->serialMode == RED_SERIAL_INTERRPUT_MODE || serialUserSetting->serialMode == RED_SERIAL_POLLING_MODE) {
-    RCC_APB2PeriphClockCmd(serialHW->rx_gpioClock, ENABLE);
-    RCC_APB2PeriphClockCmd(serialHW->tx_gpioClock, ENABLE);
+  if (userSetting->serialMode == RED_SERIAL_INTERRPUT_MODE || userSetting->serialMode == RED_SERIAL_POLLING_MODE) {
+    RCC_APB2PeriphClockCmd(hw->rx_gpioClock, ENABLE);
+    RCC_APB2PeriphClockCmd(hw->tx_gpioClock, ENABLE);
 
-    if (serialHW->uartClock != RCC_APB2Periph_USART1)
-      RCC_APB1PeriphClockCmd(serialHW->uartClock, ENABLE); // 2345
+    if (hw->uartClock != RCC_APB2Periph_USART1)
+      RCC_APB1PeriphClockCmd(hw->uartClock, ENABLE); // 2345
     else
-      RCC_APB2PeriphClockCmd(serialHW->uartClock, ENABLE); // 1
+      RCC_APB2PeriphClockCmd(hw->uartClock, ENABLE); // 1
 
     GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = serialHW->tx_gpioPin; // tx pa9
+    GPIO_InitStructure.GPIO_Pin = hw->tx_gpioPin; // tx pa9
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
-    GPIO_Init(serialHW->tx_gpioPort, &GPIO_InitStructure);
+    GPIO_Init(hw->tx_gpioPort, &GPIO_InitStructure);
 
-    GPIO_InitStructure.GPIO_Pin = serialHW->rx_gpioPin; // rx pa10
+    GPIO_InitStructure.GPIO_Pin = hw->rx_gpioPin; // rx pa10
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(serialHW->rx_gpioPort, &GPIO_InitStructure);
+    GPIO_Init(hw->rx_gpioPort, &GPIO_InitStructure);
 
     USART_InitTypeDef USART_InitStructure;
-    USART_InitStructure.USART_BaudRate = serialUserSetting->baudrate;
+    USART_InitStructure.USART_BaudRate = userSetting->baudrate;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-    USART_InitStructure.USART_StopBits = serialUserSetting->stopbit;
-    USART_InitStructure.USART_Parity = serialUserSetting->parity;
+    USART_InitStructure.USART_StopBits = userSetting->stopbit;
+    USART_InitStructure.USART_Parity = userSetting->parity;
     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-    USART_Init(serialHW->uartPort, &USART_InitStructure);
+    USART_Init(hw->uartPort, &USART_InitStructure);
 
-    if (serialUserSetting->serialMode == RED_SERIAL_INTERRPUT_MODE) {
-      USART_ITConfig(serialHW->uartPort, USART_IT_RXNE, ENABLE);
+    if (userSetting->serialMode == RED_SERIAL_INTERRPUT_MODE) {
+      USART_ITConfig(hw->uartPort, USART_IT_RXNE, ENABLE);
 
       NVIC_InitTypeDef NVIC_InitStructure;
-      NVIC_InitStructure.NVIC_IRQChannel = serialHW->uartIRQ;
+      NVIC_InitStructure.NVIC_IRQChannel = hw->uartIRQ;
       NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
       NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
       NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
       NVIC_Init(&NVIC_InitStructure);
     }
 
-    USART_Cmd(serialHW->uartPort, ENABLE);
+    USART_Cmd(hw->uartPort, ENABLE);
   }
   else {
     // SOFT SERIAL
   }
 }
 
-red_serialUartPort_t* redSerialUartInit(uint8_t serialUartPortNum, red_serialUart_userSetting_t* userSetting) {
+red_serialUartDevice_t* redSerialUartInit(uint8_t serialUartPortNum, red_serialUart_userSetting_t* userSetting) {
   assert_param(IS_VAILD_SERIAL_PORT_NUM(serialUartPortNum));
 
-  red_serialUartPort_t* serialUartPort = &serialUartPorts[serialUartPortNum];
+  red_serialUartDevice_t* serialUartPort = &serialUartPorts[serialUartPortNum];
 
   serialUartSettings[serialUartPortNum].hw = &redSerialUartHardWareMap[serialUartPortNum];
   serialUartSettings[serialUartPortNum].userSetting = userSetting;
-  serialUartPort->setting = &serialUartSettings[serialUartPortNum];
+  serialUartPort->param = &serialUartSettings[serialUartPortNum];
 
-  serialUartPort->setting->txQueue.buf = serialUartPortBuf[serialUartPortNum].txBuf;
-  serialUartPort->setting->txQueue.size = BUF_SIZE;
-  serialUartPort->setting->rxQueue.buf = serialUartPortBuf[serialUartPortNum].rxBuf;
-  serialUartPort->setting->rxQueue.size = BUF_SIZE;
+  serialUartPort->param->txQueue.buf = serialUartPortBuf[serialUartPortNum].txBuf;
+  serialUartPort->param->txQueue.size = BUF_SIZE;
+  serialUartPort->param->rxQueue.buf = serialUartPortBuf[serialUartPortNum].rxBuf;
+  serialUartPort->param->rxQueue.size = BUF_SIZE;
 
   serialUartPort->putChar = red_putchar;
   serialUartPort->getChar = red_getchar;
@@ -173,20 +177,21 @@ red_serialUartPort_t* redSerialUartInit(uint8_t serialUartPortNum, red_serialUar
   return serialUartPort;
 }
 
-static void red_serialUart_handler(struct red_serialUartPort* this) {
-  assert_param(IS_CONFIGED_SERIAL_PORT(this->setting));
+static void red_serialUart_handler(struct red_serialUartDevice* this) {
+  assert_param(IS_CONFIGED_SERIAL_PORT(this->param));
 
-  const red_serialUart_hardware_t* serialHW = this->setting->hw;
+  red_serialUart_param_t* param = this->param;
+  const red_serialUart_hardware_t* hw = param->hw;
 
-  if (USART_GetITStatus(serialHW->uartPort, USART_IT_RXNE) != RESET) {
-    this->setting->rxQueue.buf[this->setting->rxQueue.head++] = USART_ReceiveData(serialHW->uartPort);
-    this->setting->rxQueue.head %= this->setting->rxQueue.size;
+  if (USART_GetITStatus(hw->uartPort, USART_IT_RXNE) != RESET) {
+    param->rxQueue.buf[param->rxQueue.head++] = USART_ReceiveData(hw->uartPort);
+    param->rxQueue.head %= param->rxQueue.size;
   }
-  if (USART_GetITStatus(serialHW->uartPort, USART_IT_TXE) != RESET) {
-    USART_SendData(serialHW->uartPort, this->setting->txQueue.buf[this->setting->txQueue.tail++]);
-    this->setting->txQueue.tail %= this->setting->txQueue.size;
-    if (this->setting->txQueue.head == this->setting->txQueue.tail)
-      USART_ITConfig(serialHW->uartPort, USART_IT_TXE, DISABLE);
+  if (USART_GetITStatus(hw->uartPort, USART_IT_TXE) != RESET) {
+    USART_SendData(hw->uartPort, param->txQueue.buf[param->txQueue.tail++]);
+    param->txQueue.tail %= param->txQueue.size;
+    if (param->txQueue.head == param->txQueue.tail)
+      USART_ITConfig(hw->uartPort, USART_IT_TXE, DISABLE);
   }
 }
 

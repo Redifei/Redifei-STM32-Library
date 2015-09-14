@@ -21,19 +21,20 @@
 #include <stm32f10x_conf.h>
 #include "timerPwm.h"
 
-static red_timPwmPort_t timPwmPorts[RED_TIMER_PWM_CHANNEL_MAX] = { NULL, };
-static red_timPwm_setting_t timPwmSettings[RED_TIMER_PWM_CHANNEL_MAX] = { NULL, };
+static red_timPwmDevice_t timPwmPorts[RED_TIMER_PWM_CHANNEL_MAX] = { NULL, };
+static red_timPwm_param_t timPwmSettings[RED_TIMER_PWM_CHANNEL_MAX] = { NULL, };
 
 /**
  * red_timeBaseConfig
  * @note timer port setting (period, prescaler, ..)
- * @param this : red_timPwmPort object
+ * @param this : red_timPwmDevice object
  */
-void red_timeBaseConfig(struct red_timPwmPort* this) {
-  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
+void red_timeBaseConfig(struct red_timPwmDevice* this) {
+  assert_param(IS_CONFIGED_TIMER_PORT(this->param));
 
-  const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
-  red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
+  red_timPwm_param_t* param = this->param;
+  const red_timPwm_hardware_t* timerPwmHW = param->hw;
+  red_timPwm_userSetting_t* timerPwmSetting = param->userSetting;
 
   // Clock Init, Calc Timer Clock Speed
   RCC_ClocksTypeDef RCC_CLOCKS;
@@ -63,14 +64,15 @@ void red_timeBaseConfig(struct red_timPwmPort* this) {
 
 /**
  * red_timPwmOutPortConfig
- * @param this : red_timPwmPort object
+ * @param this : red_timPwmDevice object
  */
-void red_timPwmOutPortConfig(struct red_timPwmPort* this) {
-  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
-  assert_param(IS_OUTPUT_TIMER_PORT(this->setting->userSetting->timPwmMode));
+void red_timPwmOutPortConfig(struct red_timPwmDevice* this) {
+  assert_param(IS_CONFIGED_TIMER_PORT(this->param));
+  assert_param(IS_OUTPUT_TIMER_PORT(this->param->userSetting->timPwmMode));
 
-  const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
-  red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
+  red_timPwm_param_t* param = this->param;
+  const red_timPwm_hardware_t* timerPwmHW = param->hw;
+  red_timPwm_userSetting_t* timerPwmSetting = param->userSetting;
 
   TIM_TypeDef* timx = timerPwmHW->timPort;
 
@@ -124,14 +126,15 @@ void red_timPwmOutPortConfig(struct red_timPwmPort* this) {
 
 /**
  * red_timPwmInPortConfig
- * @param this : red_timPwmPort object
+ * @param this : red_timPwmDevice object
  */
-void red_timPwmInPortConfig(struct red_timPwmPort* this) {
-  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
-  assert_param(IS_INPUT_TIMER_PORT(this->setting->userSetting->timPwmMode));
+void red_timPwmInPortConfig(struct red_timPwmDevice* this) {
+  assert_param(IS_CONFIGED_TIMER_PORT(this->param));
+  assert_param(IS_INPUT_TIMER_PORT(this->param->userSetting->timPwmMode));
 
-  const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
-  red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
+  red_timPwm_param_t* param = this->param;
+  const red_timPwm_hardware_t* timerPwmHW = param->hw;
+  red_timPwm_userSetting_t* timerPwmSetting = param->userSetting;
 
 
   TIM_TypeDef* timx = timerPwmHW->timPort;
@@ -184,15 +187,16 @@ void red_timPwmInPortConfig(struct red_timPwmPort* this) {
 
 /**
  * red_timePwmOutWrite
- * @param this : red_timPwmPort object
+ * @param this : red_timPwmDevice object
  * @param duty : write pwm out duty
  */
-void red_timePwmOutWrite(struct red_timPwmPort* this, uint16_t duty) {
-  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
-  assert_param(IS_OUTPUT_TIMER_PORT(this->setting->userSetting->timPwmMode));
+void red_timePwmOutWrite(struct red_timPwmDevice* this, uint16_t duty) {
+  assert_param(IS_CONFIGED_TIMER_PORT(this->param));
+  assert_param(IS_OUTPUT_TIMER_PORT(this->param->userSetting->timPwmMode));
 
-  const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
-  red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
+  red_timPwm_param_t* param = this->param;
+  const red_timPwm_hardware_t* timerPwmHW = param->hw;
+  red_timPwm_userSetting_t* timerPwmSetting = param->userSetting;
 
   // only Output Mode
   if(timerPwmSetting->timPwmMode != RED_TIMER_PWM_OUTPUT_MODE)
@@ -221,15 +225,16 @@ void red_timePwmOutWrite(struct red_timPwmPort* this, uint16_t duty) {
 
 /**
  * red_timePwmInRead
- * @param this : red_timPwmPort object
+ * @param this : red_timPwmDevice object
  * @return read pwm in duty
  */
-uint16_t red_timePwmInRead(struct red_timPwmPort* this) {
-  assert_param(IS_CONFIGED_TIMER_PORT(this->setting));
-  assert_param(IS_INPUT_TIMER_PORT(this->setting->userSetting->timPwmMode));
+uint16_t red_timePwmInRead(struct red_timPwmDevice* this) {
+  assert_param(IS_CONFIGED_TIMER_PORT(this->param));
+  assert_param(IS_INPUT_TIMER_PORT(this->param->userSetting->timPwmMode));
 
   // read pwm duty
-  return this->setting->duty;
+  red_timPwm_param_t* param = this->param;
+  return param->duty;
 }
 
 /**
@@ -239,25 +244,25 @@ uint16_t red_timePwmInRead(struct red_timPwmPort* this) {
  *                      resolution : Timer Pwm duty resolution (us)
  *                      hz         : Timer Pwm duty hz (Output Only)
  *                      callback   : Timer Pwm IRQ Callback Function (Input Only)
- * @return red_timPwmPort object
+ * @return red_timPwmDevice object
  */
-red_timPwmPort_t* redTimerPwmInit(uint8_t timPwmPortNum, red_timPwm_userSetting_t* userSetting) {
+red_timPwmDevice_t* redTimerPwmInit(uint8_t timPwmPortNum, red_timPwm_userSetting_t* userSetting) {
   assert_param(IS_VAILD_TIMER_PORT_NUM(timPwmPortNum));
 
-  red_timPwmPort_t* timPwmPort = &timPwmPorts[timPwmPortNum];
+  red_timPwmDevice_t* timPwmPort = &timPwmPorts[timPwmPortNum];
 
   timPwmSettings[timPwmPortNum].hw = &redTimerPwmHardWareMap[timPwmPortNum];
   timPwmSettings[timPwmPortNum].userSetting = userSetting;
-  timPwmPort->setting = &timPwmSettings[timPwmPortNum];
+  timPwmPort->param = &timPwmSettings[timPwmPortNum];
 
-  timPwmPort->setting->duty = 0;
+  timPwmPort->param->duty = 0;
 
   timPwmPort->write = red_timePwmOutWrite;
   timPwmPort->read = red_timePwmInRead;
 
   red_timeBaseConfig(timPwmPort);
 
-  switch (timPwmPort->setting->userSetting->timPwmMode) {
+  switch (timPwmPort->param->userSetting->timPwmMode) {
   case RED_TIMER_PWM_INPUT_MODE:
     red_timPwmInPortConfig(timPwmPort);
     break;
@@ -272,17 +277,19 @@ red_timPwmPort_t* redTimerPwmInit(uint8_t timPwmPortNum, red_timPwm_userSetting_
 
 /**
  * red_timer_Handler
- * @param this : red_timPwmPort object
+ * @param this : red_timPwmDevice object
  */
-void red_timer_Handler(struct red_timPwmPort* this) {
+void red_timer_Handler(struct red_timPwmDevice* this) {
   // only set timer to Input mode
-  if(this->setting == NULL)
+  if(this->param == NULL)
     return;
-  if(this->setting->userSetting->timPwmMode != RED_TIMER_PWM_INPUT_MODE)
+  if(this->param->userSetting->timPwmMode != RED_TIMER_PWM_INPUT_MODE)
     return;
 
-  const red_timPwm_hardware_t* timerPwmHW = this->setting->hw;
-  red_timPwm_userSetting_t* timerPwmSetting = this->setting->userSetting;
+  red_timPwm_param_t* param = this->param;
+  const red_timPwm_hardware_t* timerPwmHW = param->hw;
+  red_timPwm_userSetting_t* timerPwmSetting = param->userSetting;
+
   TIM_TypeDef* timx = timerPwmHW->timPort;
 
   // Check timer interrupt flag, read timer capture
@@ -317,15 +324,15 @@ void red_timer_Handler(struct red_timPwmPort* this) {
     return; // Error?
 
   // calc Timer pwm duty
-  if (this->setting->state == 0) {
-    this->setting->riseTime = capture;
-    this->setting->state = 1;
+  if (param->state == 0) {
+    param->riseTime = capture;
+    param->state = 1;
     timx->CCER |= tim_ccer_ccnp;
   }
   else {
-    this->setting->fallTime = capture;
-    this->setting->state = 0;
-    this->setting->duty = this->setting->fallTime - this->setting->riseTime;
+    param->fallTime = capture;
+    param->state = 0;
+    param->duty = param->fallTime - param->riseTime;
     timx->CCER &= ~tim_ccer_ccnp;
   }
 

@@ -21,17 +21,17 @@
 #include <stdbool.h>
 #include "queue.h"
 
-enum {
+typedef enum {
   RED_SERIAL_UART_PORT_1,
   RED_SERIAL_UART_PORT_2,
   RED_SERIAL_UART_PORT_3,
   RED_SERIAL_UART_PORT_MAX,
-};
+} red_SerialUartDevices;
 
 // Enum
 typedef enum {
   RED_SERIAL_INTERRPUT_MODE, RED_SERIAL_POLLING_MODE, RED_SERIAL_SOFTWARE_MODE,
-} red_serialMode_t;
+} red_serialUartMode_t;
 
 // HardWare List
 typedef struct {
@@ -57,11 +57,11 @@ static const red_serialUart_hardware_t redSerialUartHardWareMap[RED_SERIAL_UART_
 
 // User Setting List
 typedef struct {
-  red_serialMode_t serialMode;
+  red_serialUartMode_t serialMode;
   uint32_t baudrate;
   uint16_t parity;
   uint16_t stopbit;
-//  uint16_t bufSize;
+  void (*callback)(uint8_t chan);
 } red_serialUart_userSetting_t;
 
 // Serial Setting List
@@ -70,18 +70,18 @@ typedef struct {
   red_serialUart_userSetting_t* userSetting;
   Qtype_t txQueue;
   Qtype_t rxQueue;
-} red_serialUart_setting_t;
+} red_serialUart_param_t;
 
 // Serial Port List
-typedef struct red_serialUartPort {
-  red_serialUart_setting_t* setting;
-  void (*putChar)(struct red_serialUartPort* this, char);
-  char (*getChar)(struct red_serialUartPort* this);
-  void (*printf)(struct red_serialUartPort* this, char *format, ...);
-  bool (*available)(struct red_serialUartPort* this);
-} red_serialUartPort_t;
+typedef struct red_serialUartDevice {
+  red_serialUart_param_t* param;
+  void (*putChar)(struct red_serialUartDevice* this, char);
+  char (*getChar)(struct red_serialUartDevice* this);
+  void (*printf)(struct red_serialUartDevice* this, char *format, ...);
+  bool (*available)(struct red_serialUartDevice* this);
+} red_serialUartDevice_t;
 
 #define IS_CONFIGED_SERIAL_PORT(THIS_SETTING) (THIS_SETTING != NULL)
 #define IS_VAILD_SERIAL_PORT_NUM(SERIAL_NUM) (SERIAL_NUM < RED_SERIAL_UART_PORT_MAX)
 
-red_serialUartPort_t* redSerialUartInit(uint8_t serialUartPortNum, red_serialUart_userSetting_t* userSetting);
+red_serialUartDevice_t* redSerialUartInit(uint8_t serialUartPortNum, red_serialUart_userSetting_t* userSetting);

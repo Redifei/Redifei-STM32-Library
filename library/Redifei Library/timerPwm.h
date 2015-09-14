@@ -40,7 +40,7 @@ enum {
   RED_TIMER4_PWM_CHANNEL_4,
 
   RED_TIMER_PWM_CHANNEL_MAX,
-};
+} red_TimerPwmDevices;
 
 typedef enum {
   RED_TIMER_PWM_INPUT_MODE, RED_TIMER_PWM_OUTPUT_MODE,
@@ -95,17 +95,17 @@ typedef struct {
   uint16_t fallTime;
   uint16_t duty;
   uint8_t state; // bool
-} red_timPwm_setting_t;
+} red_timPwm_param_t;
 
-typedef struct red_timPwmPort {
-  red_timPwm_setting_t* setting;
-  void (*write)(struct red_timPwmPort* this, uint16_t duty);
-  uint16_t (*read)(struct red_timPwmPort* this);
-} red_timPwmPort_t;
+typedef struct red_timPwmDevice {
+  red_timPwm_param_t* param;
+  void (*write)(struct red_timPwmDevice* this, uint16_t duty);
+  uint16_t (*read)(struct red_timPwmDevice* this);
+} red_timPwmDevice_t;
 
 #define IS_CONFIGED_TIMER_PORT(THIS_SETTING) (THIS_SETTING != NULL)
 #define IS_INPUT_TIMER_PORT(TIMER_PORT) (TIMER_PORT == RED_TIMER_PWM_INPUT_MODE)
 #define IS_OUTPUT_TIMER_PORT(TIMER_PORT) (TIMER_PORT == RED_TIMER_PWM_OUTPUT_MODE)
 #define IS_VAILD_TIMER_PORT_NUM(TIMER_NUM) (TIMER_NUM < RED_TIMER_PWM_CHANNEL_MAX)
 
-red_timPwmPort_t* redTimerPwmInit(uint8_t timPwmPortNum, red_timPwm_userSetting_t* userSetting);
+red_timPwmDevice_t* redTimerPwmInit(uint8_t timPwmPortNum, red_timPwm_userSetting_t* userSetting);

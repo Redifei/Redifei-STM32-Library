@@ -48,14 +48,20 @@ int main(void) {
   red_i2c_userSetting_t redI2cUserSetting = {
       .i2cMode = RED_I2C_INTERRPUT_MODE,
       .clockSpeed = 400000,
+      .timeOut = I2C_DEFAULT_TIMEOUT,
   };
   red_i2cPort_t* redI2c = redI2cInit(RED_I2C_PORT_1, &redI2cUserSetting);
 
   // Init I2c Sensor Mpu6050
-  redI2c->write1Byte(redI2c, 0x68, 0x6B, 0x80);
+  uint8_t buf[2];
+  buf[0] = 0x6B;
+  buf[1] = 0x80;
+  redI2c->writeBytes(redI2c, 0x68, 2, buf);
   delay(5);
 
-  redI2c->write1Byte(redI2c, 0x68, 0x6B, 0x03);
+  buf[0] = 0x6B;
+  buf[1] = 0x00;
+  redI2c->writeBytes(redI2c, 0x68, 2, buf);
   delay(100);
 
   redSerial->printf(redSerial, "Hello World!!\r\n");
@@ -63,8 +69,8 @@ int main(void) {
 
   while (1) {
     // Read Mpu6050 Acc Z axis
-    uint8_t buf[2], err;
-    err = redI2c->readBytes(redI2c, 0x68, 0x3F, 2, buf);
+    err = redI2c->write1Byte(redI2c, 0x68, 0x3F);
+    err |= redI2c->readBytes(redI2c, 0x68, 2, buf);
     redSerial->printf(redSerial, "%d | %d\r\n", (int16_t)(buf[0] << 8 | buf[1]), err);
     delay(100);
   }
